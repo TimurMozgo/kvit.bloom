@@ -1,0 +1,252 @@
+/* --- 1. ТЕЛО И ШРИФТЫ --- */
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    background: #ffe1e1; 
+    margin: 0; 
+    overflow-x: hidden;
+    padding-bottom: 100px; 
+}
+
+/* --- 2. ШАПКА --- */
+header { 
+    background: #fff; 
+    padding: 15px; 
+    text-align: center; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    position: sticky; 
+    top: 0; 
+    z-index: 100;
+}
+
+.logo { 
+    font-weight: 900;
+    color: #d14d72;
+    text-transform: uppercase;
+    font-size: 28px; 
+    letter-spacing: 1px;
+}
+
+h1 {
+    text-align: center;
+    color: #d14d72;
+    font-size: 30px;
+    margin: 20px 0;
+}
+
+/* --- 3. СЕТКА ТОВАРОВ --- */
+.product-grid { 
+    display: grid;
+    grid-template-columns: 1fr; /* Мобилка: 1 в ряд */
+    gap: 15px; 
+    padding: 20px; 
+}
+
+@media (min-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr); /* ПК: 4 в ряд */
+        max-width: 1200px; 
+        margin: 0 auto; 
+    }
+}
+
+/* --- 4. КАРТОЧКА (СЕКРЕТ ВЫРАВНИВАНИЯ) --- */
+.product-card {
+    background: #fff; 
+    border-radius: 24px; 
+    padding: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04); 
+    border: 1px solid rgba(0,0,0,0.03);
+    transition: transform 0.3s ease;
+    
+    /* Используем Grid внутри карточки, чтобы разделить её на части */
+    display: grid;
+    grid-template-rows: auto 1fr auto auto; /* 1.Картинка, 2.Заголовок(растягивается), 3.Цена, 4.Кнопка */
+    gap: 8px;
+    height: 100%; 
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.product-image {
+    width: 100%; 
+    aspect-ratio: 1 / 1;
+    object-fit: cover; 
+    border-radius: 18px;
+    margin-bottom: 5px;
+}
+
+.product-title { 
+    font-weight: 700; 
+    font-size: 1.1rem; 
+    color: #333;
+    margin: 0;
+    /* Центрируем текст по вертикали в его области */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3em; /* Резервируем место под 2 строки, чтобы кнопки не прыгали */
+}
+
+.product-price { 
+    color: #d14d72; 
+    font-size: 1.2rem; 
+    font-weight: 800; 
+    margin: 5px 0 10px 0;
+}
+
+/* --- 5. КНОПКИ (УЛЬТИМАТУМ) --- */
+.buy-btn, .counter-container {
+    width: 100%;
+    max-width: 180px;
+    height: 48px; /* Фиксируем высоту намертво */
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.buy-btn {
+    background: #d14d72; 
+    color: #fff; 
+    border: none; 
+    border-radius: 14px; 
+    font-weight: bold;
+    cursor: pointer; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.buy-btn:hover {
+    background-color: #00d607;
+}
+
+.counter-container {
+    display: none; 
+    align-items: center;
+    justify-content: space-between;
+    background: #f9f9f9;
+    border-radius: 14px;
+    padding: 0 5px;
+}
+
+.count-btn {
+    background: #fff; 
+    color: #d14d72; 
+    border: 1px solid #eee;
+    width: 38px; 
+    height: 38px; 
+    border-radius: 10px; 
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.count-value { font-weight: 800; color: #333; }
+
+/* --- 6. КОРЗИНА (FAB) --- */
+.cart-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 20px;
+    background: #00d607;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0,214,7,0.4);
+    z-index: 1000;
+}
+
+.cart-fab::before {
+    content: '🛒';
+    font-size: 30px;
+}
+
+/* Плавное появление оверлея */
+.cart-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Когда активен — проявляем */
+.cart-overlay.active {
+    display: flex;
+    align-items: flex-end; /* Для эффекта появления снизу */
+    opacity: 1;
+}
+
+/* Сама корзина с анимацией выезда */
+.cart-container {
+    background: white;
+    width: 100%;
+    border-radius: 30px 30px 0 0;
+    padding: 20px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+}
+
+.cart-overlay.active .cart-container {
+    transform: translateY(0);
+}
+
+/* Стиль товара как на скрине */
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f8f8;
+    padding: 15px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.checkout-btn {
+    display: block;
+    width: 100%;         
+    text-align: center; 
+    font-weight: 600; 
+    background-color: #000;
+    color: #ffffff;
+    border-radius: 20px;
+    padding: 15px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.checkout-btn:hover {
+    color: #000000;
+    background-color: #d14d72;
+}
+
+/* Карточка товара, которого нет */
+.product-card.out-of-stock {
+    opacity: 0.6; /* Делаем бледнее */
+    pointer-events: none; /* Нельзя кликнуть */
+    filter: grayscale(0.8); /* Делаем почти ч/б */
+}
+
+/* Красивая плашка "Нет в наличии" */
+.out-of-stock-label {
+    background: #f1f1f1;
+    color: #888;
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: 1px dashed #ccc;
+}

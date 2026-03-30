@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kvit.Bloom — Магазин</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">Kvit.Bloom</div>
+    </header>
+
+    <main>
+        <div id="products-container" class="products-grid"></div>
+    </main>
+
+    <div class="cart-fab" id="cart-fab" onclick="openCart()" style="display: none;"> 
+    </div>
+
+   <div id="cart-modal" class="cart-overlay">
+        <div class="cart-container">
+            <div id="cart-header" class="cart-header"></div>
+            
+            <div id="cart-items-list" class="cart-items-list"></div>
+            
+            <div id="cart-total-container" class="cart-total-container"></div>
+
+            <button id="checkout-btn" class="checkout-btn" onclick="checkout()">
+                Оформить заказ
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
