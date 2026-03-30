@@ -1,21 +1,27 @@
 let totalSum = 0;
+// Твой актуальный URL Webhook из n8n
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
 
 // 1. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
     try {
         const response = await fetch(N8N_WEBHOOK_URL);
+        if (!response.ok) throw new Error('Сеть не отвечает');
+        
         const data = await response.json();
         
+        // n8n может вернуть либо массив объектов, либо один объект
         const items = Array.isArray(data) ? data : (data ? [data] : []);
 
         if (items.length > 0) {
             renderProducts(items);
         } else {
-            console.warn("Таблиця порожня");
+            console.warn("Таблиця порожня или данные не пришли");
+            document.getElementById('products-container').innerHTML = '<p>Товари тимчасово відсутні</p>';
         }
     } catch (error) {
         console.error('Помилка завантаження:', error);
+        document.getElementById('products-container').innerHTML = '<p>Помилка зв\'язку з сервером</p>';
     }
 }
 
@@ -26,6 +32,7 @@ function renderProducts(items) {
     container.innerHTML = ''; 
 
     items.forEach(item => {
+        // Убедись, что в Google Таблице колонки называются именно так:
         const title = item['Название'] || 'Без назви';
         const price = item['Цена'] || 0;
         const quantity = parseInt(item['Кол-во']) || 0;
@@ -35,14 +42,14 @@ function renderProducts(items) {
 
         container.innerHTML += `
             <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''}">
-                ${img ? `<img src="${img}" class="product-image">` : ''}
+                ${img ? `<img src="${img}" class="product-image" alt="${title}">` : ''}
                 <div class="product-info">
                     <h3 class="product-title">${title}</h3>
                     <p class="product-price">${price} ₴</p>
                     <button class="buy-btn" onclick="showCounter(this)" ${isOutOfStock ? 'disabled' : ''}>
                         ${isOutOfStock ? 'Немає в наявності' : 'Додати в кошик'}
                     </button>
-                    <div class="counter-container" style="display: none;">
+                    <div class="counter-container" style="display: none; align-items: center; justify-content: center; gap: 10px;">
                         <button class="count-btn" onclick="changeCount(this, -1)">-</button>
                         <span class="count-value">1</span>
                         <button class="count-btn" onclick="changeCount(this, 1)">+</button>
@@ -53,7 +60,7 @@ function renderProducts(items) {
     });
 }
 
-// 3. ЛОГИКА КОРЗИНЫ
+// 3. ЛОГИКА КОРЗИНЫ (оставляем твою, она рабочая)
 function showCounter(btn) {
     const card = btn.closest('.product-card');
     const counter = card.querySelector('.counter-container');
@@ -69,14 +76,13 @@ function changeCount(btn, delta) {
 
     if (newCount <= 0) {
         card.querySelector('.counter-container').style.display = 'none';
-        card.querySelector('.buy-btn').style.display = 'flex';
+        card.querySelector('.buy-btn').style.display = 'block'; // Вернул блоком для верстки
         countDisplay.innerText = 1;
     } else {
         countDisplay.innerText = newCount;
     }
     updateTotal();
     
-    // Если корзина открыта — обновляем её содержимое на лету
     if (document.getElementById('cart-modal')?.classList.contains('active')) {
         totalSum > 0 ? openCart() : closeCart();
     }
@@ -90,7 +96,8 @@ function updateTotal() {
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
-            const price = parseInt(card.querySelector('.product-price').innerText.replace(/\D/g, '')) || 0;
+            const priceText = card.querySelector('.product-price').innerText;
+            const price = parseInt(priceText.replace(/\D/g, '')) || 0;
             const count = parseInt(card.querySelector('.count-value').innerText) || 0;
             tempTotal += (price * count);
             hasItems = true;
@@ -101,7 +108,7 @@ function updateTotal() {
     if (fab) fab.style.display = hasItems ? 'flex' : 'none';
 }
 
-// 4. РАБОТА С МОДАЛЬНЫМ ОКНОМ КОРЗИНЫ
+// 4. МОДАЛКА КОРЗИНЫ (твоя база)
 function openCart() {
     const modal = document.getElementById('cart-modal');
     const list = document.getElementById('cart-items-list');
@@ -126,7 +133,7 @@ function openCart() {
                         <div style="font-weight:bold;">${title}</div>
                         <div style="font-size:0.9em; color:#666;">${count} шт. x ${price}</div>
                     </div>
-                    <button onclick="deleteProduct('${title}')" style="background:none; border:none; color:red; cursor:pointer;">✕</button>
+                    <button onclick="deleteProduct('${title}')" style="background:none; border:none; color:red; cursor:pointer; font-size:1.2em;">✕</button>
                 </div>
             `;
         }
@@ -147,7 +154,7 @@ function deleteProduct(title) {
     document.querySelectorAll('.product-card').forEach(card => {
         if (card.querySelector('.product-title').innerText === title) {
             card.querySelector('.counter-container').style.display = 'none';
-            card.querySelector('.buy-btn').style.display = 'flex';
+            card.querySelector('.buy-btn').style.display = 'block';
             card.querySelector('.count-value').innerText = 1;
         }
     });
@@ -155,7 +162,7 @@ function deleteProduct(title) {
     totalSum > 0 ? openCart() : closeCart();
 }
 
-// 5. ФИНАЛЬНЫЙ ЗАКАЗ В ТЕЛЕГРАМ
+// 5. ЗАКАЗ В ТЕЛЕГРАМ
 function checkout() {
     let message = "🛒 *Нове замовлення:*\n\n";
     let hasItems = false;
@@ -173,6 +180,7 @@ function checkout() {
     if (!hasItems) return;
 
     message += `\n💰 *Разом: ${totalSum} ₴*`;
+    // Твой контакт в телеграм
     window.location.href = `https://t.me/tinellton?text=${encodeURIComponent(message)}`;
 }
 
