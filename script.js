@@ -4,7 +4,7 @@ const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69f
 /** * НОВЫЙ URL ДЛЯ СПИСАНИЯ. 
  * Создай в n8n новый воркфлоу с Webhook (POST) и вставь ссылку сюда.
  */
-const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook-test/613a3f51-2e98-4f32-81e5-ebadd7f583eb'; 
+const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/613a3f51-2e98-4f32-81e5-ebadd7f583eb'; 
 
 // 1. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
