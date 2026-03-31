@@ -33,22 +33,28 @@ h1 {
     margin: 20px 0;
 }
 
-/* --- 3. СЕТКА ТОВАРОВ --- */
+/* --- 3. СЕТКА ТОВАРОВ (Адаптивная) --- */
 .product-grid { 
     display: grid;
-    grid-template-columns: 1fr; /* Мобилка: 1 в ряд */
-    gap: 15px; 
-    padding: 20px; 
+    grid-template-columns: 1fr; 
+    gap: 20px; 
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 600px) {
     .product-grid {
-        grid-template-columns: repeat(4, 1fr); /* ПК: 4 в ряд */
-        max-width: 1200px; 
-        margin: 0 auto; 
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
+@media (min-width: 1024px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+    }
+}
 /* --- 4. КАРТОЧКА (СЕКРЕТ ВЫРАВНИВАНИЯ) --- */
 .product-card {
     background: #fff; 
