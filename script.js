@@ -30,8 +30,13 @@ async function loadStore() {
 }
 
 // 2. ОТРИСОВКА КАРТОЧЕК
+// 2. ОТРИСОВКА КАРТОЧЕК
 function renderProducts(items) {
     const container = document.getElementById('products-container');
+    if (!container) return;
+
+    // Принудительно ставим класс сетки для 4 колонок на ПК
+    container.className = 'product-grid'; 
     container.innerHTML = ''; 
 
     items.forEach(item => {
@@ -40,16 +45,21 @@ function renderProducts(items) {
         const quantity = parseInt(item['Кол-во']) || 0;
         const img = item['Фото'] || ''; 
 
-        const isOutOfStock = quantity <= 0;
+        // Если товара 0 или меньше — ВООБЩЕ не рисуем его (скрываем)
+        if (quantity <= 0) return;
 
         container.innerHTML += `
-            <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''}">
-                ${img ? `<img src="${img}" class="product-image" alt="${title}">` : '<div class="product-image" style="background:#eee; display:flex; align-items:center; justify-content:center;">🖼️</div>'}
+            <div class="product-card">
+                <div class="product-image-container">
+                    ${img ? 
+                        `<img src="${img}" class="product-image" alt="${title}" onerror="this.src='https://via.placeholder.com/300x300?text=KVIT.BLOOM';">` : 
+                        '<div class="product-image" style="background:#f9f9f9; display:flex; align-items:center; justify-content:center; height:100%;">🌸</div>'
+                    }
+                </div>
                 <div class="product-info">
                     <h3 class="product-title">${title}</h3>
                     <p class="product-price">${price} ₴</p>
-                    ${isOutOfStock ? '<div class="out-of-stock-label">Немає в наявності</div>' : ''}
-                    <button class="buy-btn" onclick="showCounter(this)" ${isOutOfStock ? 'style="display:none"' : ''}>
+                    <button class="buy-btn" onclick="showCounter(this)">
                         Додати в кошик
                     </button>
                     <div class="counter-container" style="display: none;">
@@ -61,6 +71,11 @@ function renderProducts(items) {
             </div>
         `;
     });
+
+    // Если после фильтрации (скрытия нулей) товаров не осталось
+    if (container.innerHTML === '') {
+        container.innerHTML = '<p style="text-align:center; width:100%; padding:50px;">На жаль, всі товари розпродані 🌸</p>';
+    }
 }
 
 // 3. ЛОГИКА КОРЗИНЫ
