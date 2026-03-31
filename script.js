@@ -1,6 +1,10 @@
 let totalSum = 0;
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
-const ORDER_AUDIT_URL = 'ССЫЛКА_ДЛЯ_ЗАКАЗОВ_ИЗ_N8N'; // Сюда будут падать заказы в таблицу
+
+/** * НОВЫЙ URL ДЛЯ СПИСАНИЯ. 
+ * Создай в n8n новый воркфлоу с Webhook (POST) и вставь ссылку сюда.
+ */
+const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/613a3f51-2e98-4f32-81e5-ebadd7f583eb'; 
 
 // 1. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
@@ -36,12 +40,14 @@ function renderProducts(items) {
         const title = item['Название'] || 'Без назви';
         const price = parseInt(item['Цена']) || 0;
         const quantity = parseInt(item['Кол-во']) || 0;
+        const status = item['Статус'] || 'Active'; // Читаем статус из таблицы
         const img = item['Фото'] || ''; 
 
-        if (quantity <= 0) return;
+        // УСЛОВИЕ: Показываем только если есть в наличии И статус Active
+        if (quantity <= 0 || status !== 'Active') return;
 
         container.innerHTML += `
-            <div class="product-card">
+            <div class="product-card" data-title="${title}">
                 <div class="product-image-container">
                     ${img ? `<img src="${img}" class="product-image" alt="${title}" onerror="this.src='https://via.placeholder.com/300x300?text=🌸';">` : '🌸'}
                 </div>
@@ -60,14 +66,13 @@ function renderProducts(items) {
     });
 }
 
-// 3. ЛОГИКА
+// 3. ЛОГИКА СЧЕТЧИКОВ
 function showCounter(btn) {
     const card = btn.closest('.product-card');
     const counter = card.querySelector('.counter-container');
     btn.style.display = 'none';
     counter.style.display = 'flex'; 
     updateTotal();
-    openCart(); // Сразу открываем корзину, чтобы человек видел, что добавил
 }
 
 function changeCount(btn, delta) {
@@ -83,33 +88,48 @@ function changeCount(btn, delta) {
         countDisplay.innerText = newCount;
     }
     updateTotal();
-    openCart();
+    
+    if (document.getElementById('cart-modal')?.classList.contains('active')) {
+        totalSum > 0 ? openCart() : closeCart();
+    }
 }
 
+// 4. ОБНОВЛЕНИЕ КРУГА (FAB) И СУММЫ
 function updateTotal() {
+    const fab = document.getElementById('cart-fab');
+    const fabCount = document.getElementById('fab-count');
     let tempTotal = 0;
+    let totalItems = 0;
+
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
             const price = parseInt(card.querySelector('.product-price').innerText.replace(/\D/g, '')) || 0;
             const count = parseInt(card.querySelector('.count-value').innerText) || 0;
             tempTotal += (price * count);
+            totalItems += count;
         }
     });
+
     totalSum = tempTotal;
+
+    if (fab) {
+        fab.style.display = totalItems > 0 ? 'flex' : 'none';
+        if (fabCount) fabCount.innerText = totalItems;
+    }
 }
 
-// 4. КОРЗИНА (УБРАЛИ ЛИШНИЕ ИКОНКИ)
+// 5. МОДАЛКА
 function openCart() {
     const modal = document.getElementById('cart-modal');
     const list = document.getElementById('cart-items-list');
     const totalContainer = document.getElementById('cart-total-value');
     
-    if (!modal || !list || totalSum === 0) return;
+    if (!modal || !list) return;
 
     list.innerHTML = ''; 
     modal.style.display = 'flex';
-    modal.classList.add('active');
+    setTimeout(() => modal.classList.add('active'), 10);
 
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
@@ -121,11 +141,12 @@ function openCart() {
             list.innerHTML += `
                 <div class="cart-item">
                     <div><b>${title}</b><br><small>${count} шт. x ${price}</small></div>
-                    <button onclick="deleteProduct('${title}')" style="color:red; background:none; border:none; cursor:pointer;">✕</button>
+                    <button onclick="deleteProduct('${title}')" style="color:red; background:none; border:none; cursor:pointer; font-size:1.2em;">✕</button>
                 </div>
             `;
         }
     });
+
     if (totalContainer) totalContainer.innerText = `${totalSum} ₴`;
 }
 
@@ -149,31 +170,51 @@ function deleteProduct(title) {
     totalSum > 0 ? openCart() : closeCart();
 }
 
-// 5. ФИНАЛЬНЫЙ ЧЕКАУТ
+/**
+ * 6. НОВАЯ ФУНКЦИЯ: ОТПРАВКА ДАННЫХ В N8N ДЛЯ СПИСАНИЯ
+ */
+async function sendReduceStockRequest(items) {
+    try {
+        // Отправляем массив купленных товаров в n8n
+        await fetch(N8N_REDUCE_STOCK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart: items })
+        });
+        console.log("Запит на списання надіслано в n8n");
+    } catch (error) {
+        console.error("Помилка при списанні:", error);
+    }
+}
+
+// 7. ЗАКАЗ (С ДОБАВЛЕННЫМ СПИСАНИЕМ)
 async function checkout() {
     let message = "🛒 *Нове замовлення:*\n\n";
-    let orderData = [];
+    let cartItemsForN8n = [];
+    let hasItems = false;
     
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
             const title = card.querySelector('.product-title').innerText;
-            const count = card.querySelector('.count-value').innerText;
+            const count = parseInt(card.querySelector('.count-value').innerText);
+            
             message += `▪️ *${title}*: ${count} шт.\n`;
-            orderData.push({ title, count });
+            
+            // Формируем объект для n8n
+            cartItemsForN8n.push({ name: title, quantity: count });
+            hasItems = true;
         }
     });
 
-    if (orderData.length === 0) return;
+    if (!hasItems) return;
 
-    // АУДИТ В ТАБЛИЦУ (тихо, в фоне)
-    try {
-        fetch(ORDER_AUDIT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ items: orderData, total: totalSum })
-        });
-    } catch(e) {}
+    // Сначала отправляем данные на списание в n8n
+    // Мы не ждем ответа (await), чтобы не тормозить клиента, 
+    // но если хочешь надежности — можно оставить await.
+    await sendReduceStockRequest(cartItemsForN8n);
 
+    // Затем перекидываем в Телеграм
     message += `\n💰 *Разом: ${totalSum} ₴*`;
     window.location.href = `https://t.me/tinellton?text=${encodeURIComponent(message)}`;
 }
