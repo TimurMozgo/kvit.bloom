@@ -250,3 +250,76 @@ h1 {
     font-size: 0.9rem;
     border: 1px dashed #ccc;
 }
+
+/* --- 7. SKELETON LOADING (Анимация ожидания) --- */
+/* Чтобы клиент не видел пустой экран, пока n8n просыпается */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 15px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* --- 8. BADGES (Стикеры на товары) --- */
+.product-card {
+    position: relative; /* Чтобы стикер прилип к углу */
+}
+
+.badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #00d607;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(0,214,7,0.2);
+}
+
+/* --- 9. УЛУЧШЕННЫЙ СКРОЛЛ КОРЗИНЫ --- */
+.cart-items-list {
+    max-height: 60vh; /* Чтобы корзина не уходила за экран */
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Красивый тонкий скроллбар для корзины */
+.cart-items-list::-webkit-scrollbar {
+    width: 4px;
+}
+.cart-items-list::-webkit-scrollbar-thumb {
+    background: #eee;
+    border-radius: 10px;
+}
+
+/* --- 10. ФИКС ДЛЯ ПЛАНШЕТОВ --- */
+@media (min-width: 480px) and (max-width: 767px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 в ряд на больших телефонах */
+    }
+}
+
+/* --- 11. ЭФФЕКТ НАЖАТИЯ (Haptic Feedback) --- */
+.buy-btn:active, .count-btn:active, .cart-fab:active {
+    transform: scale(0.95);
+    transition: 0.1s;
+}
+
+/* --- 12. АНИМАЦИЯ ПОЯВЛЕНИЯ ТОВАРОВ --- */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.product-card {
+    animation: fadeInUp 0.5s ease forwards;
+}
