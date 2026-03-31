@@ -1,40 +1,42 @@
 let totalSum = 0;
-// Твой актуальный URL Webhook из n8n
+// Твой URL Webhook из n8n (Production!)
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
 
 // 1. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
+    const container = document.getElementById('products-container');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="skeleton" style="height: 300px; width: 100%;"></div>'; // Skeleton loader
+
     try {
         const response = await fetch(N8N_WEBHOOK_URL);
         if (!response.ok) throw new Error('Сеть не отвечает');
         
         const data = await response.json();
         
-        // n8n может вернуть либо массив объектов, либо один объект
+        // n8n может вернуть массив или объект
         const items = Array.isArray(data) ? data : (data ? [data] : []);
 
         if (items.length > 0) {
             renderProducts(items);
         } else {
-            console.warn("Таблиця порожня или данные не пришли");
-            document.getElementById('products-container').innerHTML = '<p>Товари тимчасово відсутні</p>';
+            container.innerHTML = '<p style="text-align:center; padding:50px;">Товари тимчасово відсутні 🌸</p>';
         }
     } catch (error) {
         console.error('Помилка завантаження:', error);
-        document.getElementById('products-container').innerHTML = '<p>Помилка зв\'язку з сервером</p>';
+        container.innerHTML = '<p style="text-align:center; color:red; padding:50px;">Помилка зв\'язку з сервером. Спробуйте оновити сторінку.</p>';
     }
 }
 
 // 2. ОТРИСОВКА КАРТОЧЕК
 function renderProducts(items) {
     const container = document.getElementById('products-container');
-    if (!container) return;
     container.innerHTML = ''; 
 
     items.forEach(item => {
-        // Убедись, что в Google Таблице колонки называются именно так:
         const title = item['Название'] || 'Без назви';
-        const price = item['Цена'] || 0;
+        const price = parseInt(item['Цена']) || 0;
         const quantity = parseInt(item['Кол-во']) || 0;
         const img = item['Фото'] || ''; 
 
@@ -42,14 +44,15 @@ function renderProducts(items) {
 
         container.innerHTML += `
             <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''}">
-                ${img ? `<img src="${img}" class="product-image" alt="${title}">` : ''}
+                ${img ? `<img src="${img}" class="product-image" alt="${title}">` : '<div class="product-image" style="background:#eee; display:flex; align-items:center; justify-content:center;">🖼️</div>'}
                 <div class="product-info">
                     <h3 class="product-title">${title}</h3>
                     <p class="product-price">${price} ₴</p>
-                    <button class="buy-btn" onclick="showCounter(this)" ${isOutOfStock ? 'disabled' : ''}>
-                        ${isOutOfStock ? 'Немає в наявності' : 'Додати в кошик'}
+                    ${isOutOfStock ? '<div class="out-of-stock-label">Немає в наявності</div>' : ''}
+                    <button class="buy-btn" onclick="showCounter(this)" ${isOutOfStock ? 'style="display:none"' : ''}>
+                        Додати в кошик
                     </button>
-                    <div class="counter-container" style="display: none; align-items: center; justify-content: center; gap: 10px;">
+                    <div class="counter-container" style="display: none;">
                         <button class="count-btn" onclick="changeCount(this, -1)">-</button>
                         <span class="count-value">1</span>
                         <button class="count-btn" onclick="changeCount(this, 1)">+</button>
@@ -60,7 +63,7 @@ function renderProducts(items) {
     });
 }
 
-// 3. ЛОГИКА КОРЗИНЫ (оставляем твою, она рабочая)
+// 3. ЛОГИКА КОРЗИНЫ
 function showCounter(btn) {
     const card = btn.closest('.product-card');
     const counter = card.querySelector('.counter-container');
@@ -76,13 +79,14 @@ function changeCount(btn, delta) {
 
     if (newCount <= 0) {
         card.querySelector('.counter-container').style.display = 'none';
-        card.querySelector('.buy-btn').style.display = 'block'; // Вернул блоком для верстки
+        card.querySelector('.buy-btn').style.display = 'block';
         countDisplay.innerText = 1;
     } else {
         countDisplay.innerText = newCount;
     }
     updateTotal();
     
+    // Если корзина открыта - обновляем её содержимое
     if (document.getElementById('cart-modal')?.classList.contains('active')) {
         totalSum > 0 ? openCart() : closeCart();
     }
@@ -91,28 +95,30 @@ function changeCount(btn, delta) {
 function updateTotal() {
     const fab = document.getElementById('cart-fab');
     let tempTotal = 0;
-    let hasItems = false;
+    let countItems = 0;
 
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
-            const priceText = card.querySelector('.product-price').innerText;
-            const price = parseInt(priceText.replace(/\D/g, '')) || 0;
+            const price = parseInt(card.querySelector('.product-price').innerText.replace(/\D/g, '')) || 0;
             const count = parseInt(card.querySelector('.count-value').innerText) || 0;
             tempTotal += (price * count);
-            hasItems = true;
+            countItems += count;
         }
     });
 
     totalSum = tempTotal;
-    if (fab) fab.style.display = hasItems ? 'flex' : 'none';
+    if (fab) {
+        fab.style.display = countItems > 0 ? 'flex' : 'none';
+        fab.innerText = countItems > 0 ? `🛒 ${countItems}` : '';
+    }
 }
 
-// 4. МОДАЛКА КОРЗИНЫ (твоя база)
+// 4. МОДАЛКА КОРЗИНЫ
 function openCart() {
     const modal = document.getElementById('cart-modal');
     const list = document.getElementById('cart-items-list');
-    const totalContainer = document.getElementById('cart-total-container');
+    const totalContainer = document.getElementById('cart-total-value');
     
     if (!modal || !list) return;
 
@@ -128,7 +134,7 @@ function openCart() {
             const count = card.querySelector('.count-value').innerText;
 
             list.innerHTML += `
-                <div class="cart-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
+                <div class="cart-item">
                     <div>
                         <div style="font-weight:bold;">${title}</div>
                         <div style="font-size:0.9em; color:#666;">${count} шт. x ${price}</div>
@@ -139,7 +145,7 @@ function openCart() {
         }
     });
 
-    if (totalContainer) totalContainer.innerHTML = `Разом: ${totalSum} ₴`;
+    if (totalContainer) totalContainer.innerText = `${totalSum} ₴`;
 }
 
 function closeCart() {
@@ -180,7 +186,6 @@ function checkout() {
     if (!hasItems) return;
 
     message += `\n💰 *Разом: ${totalSum} ₴*`;
-    // Твой контакт в телеграм
     window.location.href = `https://t.me/tinellton?text=${encodeURIComponent(message)}`;
 }
 
