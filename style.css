@@ -26,6 +26,61 @@ header {
     letter-spacing: 1px;
 }
 
+/* Контейнер для кнопок */
+.categories-container {
+    display: flex;
+    gap: 12px;
+    padding: 15px 20px;
+    overflow-x: auto; /* Свайп на мобилках */
+    scrollbar-width: none; /* Скрываем скроллбар в Firefox */
+    background: #fff;
+    position: sticky;
+    top: 60px; /* Чтобы прилипало под хедером, если нужно */
+    z-index: 10;
+}
+
+.categories-container::-webkit-scrollbar {
+    display: none; /* Скрываем скроллбар в Chrome/Safari */
+}
+
+/* Сами кнопки */
+.category-btn {
+    padding: 10px 22px;
+    border: 1.5px solid #f0f0f0;
+    border-radius: 25px;
+    background: #fdfdfd;
+    color: #555;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap; /* Чтобы текст не переносился */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+/* Эффект при наведении (для ПК) */
+.category-btn:hover {
+    border-color: #ffb7c5; /* Нежно-розовый */
+    color: #ff8fa3;
+}
+
+/* Активная категория */
+.category-btn.active {
+    background: #ff8fa3; /* Твой основной цвет */
+    color: #fff;
+    border-color: #ff8fa3;
+    box-shadow: 0 4px 12px rgba(255, 143, 163, 0.3);
+}
+
+/* Заголовок раздела (если будешь добавлять h1) */
+.section-title {
+    padding: 10px 20px;
+    margin: 0;
+    font-size: 22px;
+    color: #333;
+    font-weight: 700;
+}
+
 h1 {
     text-align: center;
     color: #d14d72;

@@ -29,11 +29,22 @@ function renderProducts(items) {
     const container = document.getElementById('products-container');
     if (!container) return;
 
+    // СОХРАНЯЕМ ВСЕ ТОВАРЫ В ПАМЯТЬ (чтобы фильтровать без запросов к n8n)
+    window.allProducts = items; 
+
     container.className = 'product-grid'; 
+    
+    // При первой загрузке показываем "Все"
+    showFiltered(items);
+}
+
+// Вспомогательная функция, которая реально рисует карточки
+function showFiltered(items) {
+    const container = document.getElementById('products-container');
     container.innerHTML = ''; 
 
     items.forEach(item => {
-        const title = (item['Название'] || 'Без назви').trim(); // Убираем лишние пробелы сразу
+        const title = (item['Название'] || 'Без назви').trim();
         const price = parseInt(item['Цена']) || 0;
         const quantity = parseInt(item['Кол-во']) || 0;
         const status = item['Статус'] || 'Active';
@@ -293,6 +304,30 @@ async function finalCheckout() {
 window.onclick = function(event) {
     const modal = document.getElementById('cart-modal');
     if (event.target === modal) closeCart();
+}
+
+// 8. ЛОГИКА ФИЛЬТРАЦИИ ПО КАТЕГОРИЯМ
+function filterProducts(category, btn) {
+    // 1. Подсветка активной кнопки
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    // 2. Меняем заголовок (если добавил h1 с id="current-category-title")
+    const titleEl = document.getElementById('current-category-title');
+    if (titleEl) titleEl.innerText = category === 'Все' ? 'Всі товари' : category;
+
+    // 3. Фильтруем данные из сохраненного массива
+    if (!window.allProducts) return;
+
+    if (category === 'Все') {
+        showFiltered(window.allProducts);
+    } else {
+        const filtered = window.allProducts.filter(item => {
+            // Проверяем категорию (регистр не важен)
+            return (item['Категория'] || '').trim().toLowerCase() === category.toLowerCase();
+        });
+        showFiltered(filtered);
+    }
 }
 
 window.onload = loadStore;
