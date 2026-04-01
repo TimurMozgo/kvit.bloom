@@ -91,16 +91,17 @@ h1 {
 /* --- 3. СЕТКА ТОВАРОВ (Адаптивная) --- */
 .product-grid { 
     display: grid;
-    grid-template-columns: 1fr; 
+    /* ИСПРАВЛЕНИЕ: ставим 2 колонки сразу, чтобы не прыгало */
+    grid-template-columns: repeat(2, 1fr); 
     gap: 20px; 
     padding: 20px;
     max-width: 1400px;
     margin: 0 auto;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 768px) {
     .product-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
@@ -110,6 +111,7 @@ h1 {
         gap: 30px;
     }
 }
+
 /* --- 4. КАРТОЧКА (СЕКРЕТ ВЫРАВНИВАНИЯ) --- */
 .product-card {
     background: #fff; 
@@ -126,6 +128,8 @@ h1 {
     height: 100%; 
     box-sizing: border-box;
     text-align: center;
+    /* ИСПРАВЛЕНИЕ: чтобы карточки в ряду не дергались по высоте */
+    align-self: start; 
 }
 
 .product-card:hover {
@@ -149,7 +153,8 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 3em; /* Резервируем место под 2 строки, чтобы кнопки не прыгали */
+    /* ИСПРАВЛЕНИЕ: резервируем место под 2 строки, чтобы кнопки не прыгали */
+    min-height: 2.8em; 
 }
 
 .product-price { 
@@ -221,7 +226,6 @@ h1 {
     align-items: center;
     justify-content: center;
     color: white;
-    cursor: pointer;
     box-shadow: 0 10px 25px rgba(0,214,7,0.4);
     z-index: 1000;
 }
@@ -277,7 +281,7 @@ h1 {
 
 .checkout-btn {
     display: block;
-    width: 100%;         
+    width: 100%;          
     text-align: center; 
     font-weight: 600; 
     background-color: #000;
@@ -313,7 +317,6 @@ h1 {
 }
 
 /* --- 7. SKELETON LOADING (Анимация ожидания) --- */
-/* Чтобы клиент не видел пустой экран, пока n8n просыпается */
 .skeleton {
     background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
     background-size: 200% 100%;
