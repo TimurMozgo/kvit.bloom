@@ -187,9 +187,40 @@ async function sendReduceStockRequest(items) {
     }
 }
 
-// 7. ЗАКАЗ (С ДОБАВЛЕННЫМ СПИСАНИЕМ)
-async function checkout() {
-    let message = "🛒 *Нове замовлення:*\n\n";
+// 7. ЛОГИКА ОФОРМЛЕНИЯ ЗАКАЗА (ДВУХЭТАПНАЯ)
+
+// Шаг 1: Переход от списка товаров к форме
+function goToCheckout() {
+    if (totalSum <= 0) {
+        alert("Кошик порожній 🌸");
+        return;
+    }
+    document.getElementById('cart-stage-1').style.display = 'none';
+    document.getElementById('cart-stage-2').style.display = 'block';
+}
+
+// Возврат к списку товаров
+function backToCart() {
+    document.getElementById('cart-stage-1').style.display = 'block';
+    document.getElementById('cart-stage-2').style.display = 'none';
+}
+
+// Шаг 2: Финальное подтверждение, списание и переход в ТГ
+async function finalCheckout() {
+    const name = document.getElementById('customer-name').value.trim();
+    const phone = document.getElementById('customer-phone').value.trim();
+    const address = document.getElementById('customer-address').value.trim();
+
+    if (!name || !phone) {
+        alert("Будь ласка, введіть ім'я та номер телефону 🌸");
+        return;
+    }
+
+    let message = `👤 *Клієнт:* ${name}\n`;
+    message += `📞 *Телефон:* ${phone}\n`;
+    if (address) message += `📍 *Адреса:* ${address}\n\n`;
+    message += `🛒 *Нове замовлення:*\n`;
+
     let cartItemsForN8n = [];
     let hasItems = false;
     
@@ -200,8 +231,6 @@ async function checkout() {
             const count = parseInt(card.querySelector('.count-value').innerText);
             
             message += `▪️ *${title}*: ${count} шт.\n`;
-            
-            // Формируем объект для n8n
             cartItemsForN8n.push({ name: title, quantity: count });
             hasItems = true;
         }
@@ -209,12 +238,10 @@ async function checkout() {
 
     if (!hasItems) return;
 
-    // Сначала отправляем данные на списание в n8n
-    // Мы не ждем ответа (await), чтобы не тормозить клиента, 
-    // но если хочешь надежности — можно оставить await.
+    // Отправляем данные на списание в n8n
     await sendReduceStockRequest(cartItemsForN8n);
 
-    // Затем перекидываем в Телеграм
+    // Переход в Телеграм
     message += `\n💰 *Разом: ${totalSum} ₴*`;
     window.location.href = `https://t.me/tinellton?text=${encodeURIComponent(message)}`;
 }
