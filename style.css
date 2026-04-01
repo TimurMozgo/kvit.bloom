@@ -31,16 +31,16 @@ header {
     display: flex;
     gap: 12px;
     padding: 15px 20px;
-    overflow-x: auto; /* Свайп на мобилках */
-    scrollbar-width: none; /* Скрываем скроллбар в Firefox */
+    overflow-x: auto; 
+    scrollbar-width: none; 
     background: #fff;
     position: sticky;
-    top: 60px; /* Чтобы прилипало под хедером, если нужно */
+    top: 60px; 
     z-index: 10;
 }
 
 .categories-container::-webkit-scrollbar {
-    display: none; /* Скрываем скроллбар в Chrome/Safari */
+    display: none; 
 }
 
 /* Сами кнопки */
@@ -52,27 +52,24 @@ header {
     color: #555;
     font-size: 14px;
     font-weight: 500;
-    white-space: nowrap; /* Чтобы текст не переносился */
+    white-space: nowrap; 
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
-/* Эффект при наведении (для ПК) */
 .category-btn:hover {
-    border-color: #ffb7c5; /* Нежно-розовый */
+    border-color: #ffb7c5; 
     color: #ff8fa3;
 }
 
-/* Активная категория */
 .category-btn.active {
-    background: #ff8fa3; /* Твой основной цвет */
+    background: #ff8fa3; 
     color: #fff;
     border-color: #ff8fa3;
     box-shadow: 0 4px 12px rgba(255, 143, 163, 0.3);
 }
 
-/* Заголовок раздела (если будешь добавлять h1) */
 .section-title {
     padding: 10px 20px;
     margin: 0;
@@ -91,17 +88,17 @@ h1 {
 /* --- 3. СЕТКА ТОВАРОВ (Адаптивная) --- */
 .product-grid { 
     display: grid;
-    /* ИСПРАВЛЕНИЕ: ставим 2 колонки сразу, чтобы не прыгало */
-    grid-template-columns: repeat(2, 1fr); 
+    /* ВОЗВРАЩАЕМ 1 КОЛОНКУ ДЛЯ МОБИЛОК */
+    grid-template-columns: 1fr; 
     gap: 20px; 
     padding: 20px;
     max-width: 1400px;
     margin: 0 auto;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 600px) {
     .product-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -111,7 +108,6 @@ h1 {
         gap: 30px;
     }
 }
-
 /* --- 4. КАРТОЧКА (СЕКРЕТ ВЫРАВНИВАНИЯ) --- */
 .product-card {
     background: #fff; 
@@ -121,14 +117,13 @@ h1 {
     border: 1px solid rgba(0,0,0,0.03);
     transition: transform 0.3s ease;
     
-    /* Используем Grid внутри карточки, чтобы разделить её на части */
     display: grid;
-    grid-template-rows: auto 1fr auto auto; /* 1.Картинка, 2.Заголовок(растягивается), 3.Цена, 4.Кнопка */
+    grid-template-rows: auto 1fr auto auto; 
     gap: 8px;
     height: 100%; 
     box-sizing: border-box;
     text-align: center;
-    /* ИСПРАВЛЕНИЕ: чтобы карточки в ряду не дергались по высоте */
+    /* Фикс: чтобы карточки не растягивались криво */
     align-self: start; 
 }
 
@@ -149,11 +144,10 @@ h1 {
     font-size: 1.1rem; 
     color: #333;
     margin: 0;
-    /* Центрируем текст по вертикали в его области */
     display: flex;
     align-items: center;
     justify-content: center;
-    /* ИСПРАВЛЕНИЕ: резервируем место под 2 строки, чтобы кнопки не прыгали */
+    /* ФИКС: кнопки больше не будут прыгать */
     min-height: 2.8em; 
 }
 
@@ -168,7 +162,7 @@ h1 {
 .buy-btn, .counter-container {
     width: 100%;
     max-width: 180px;
-    height: 48px; /* Фиксируем высоту намертво */
+    height: 48px; 
     margin: 0 auto;
     box-sizing: border-box;
 }
@@ -235,7 +229,6 @@ h1 {
     font-size: 30px;
 }
 
-/* Плавное появление оверлея */
 .cart-overlay {
     display: none;
     position: fixed;
@@ -247,14 +240,12 @@ h1 {
     transition: opacity 0.3s ease;
 }
 
-/* Когда активен — проявляем */
 .cart-overlay.active {
     display: flex;
-    align-items: flex-end; /* Для эффекта появления снизу */
+    align-items: flex-end; 
     opacity: 1;
 }
 
-/* Сама корзина с анимацией выезда */
 .cart-container {
     background: white;
     width: 100%;
@@ -268,7 +259,6 @@ h1 {
     transform: translateY(0);
 }
 
-/* Стиль товара как на скрине */
 .cart-item {
     display: flex;
     justify-content: space-between;
@@ -299,9 +289,9 @@ h1 {
 
 /* Карточка товара, которого нет */
 .product-card.out-of-stock {
-    opacity: 0.6; /* Делаем бледнее */
-    pointer-events: none; /* Нельзя кликнуть */
-    filter: grayscale(0.8); /* Делаем почти ч/б */
+    opacity: 0.6; 
+    pointer-events: none; 
+    filter: grayscale(0.8); 
 }
 
 /* Красивая плашка "Нет в наличии" */
@@ -316,7 +306,7 @@ h1 {
     border: 1px dashed #ccc;
 }
 
-/* --- 7. SKELETON LOADING (Анимация ожидания) --- */
+/* --- 7. SKELETON LOADING --- */
 .skeleton {
     background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
     background-size: 200% 100%;
@@ -329,9 +319,9 @@ h1 {
     100% { background-position: -200% 0; }
 }
 
-/* --- 8. BADGES (Стикеры на товары) --- */
+/* --- 8. BADGES --- */
 .product-card {
-    position: relative; /* Чтобы стикер прилип к углу */
+    position: relative; 
 }
 
 .badge {
@@ -351,12 +341,11 @@ h1 {
 
 /* --- 9. УЛУЧШЕННЫЙ СКРОЛЛ КОРЗИНЫ --- */
 .cart-items-list {
-    max-height: 60vh; /* Чтобы корзина не уходила за экран */
+    max-height: 60vh; 
     overflow-y: auto;
     padding-right: 5px;
 }
 
-/* Красивый тонкий скроллбар для корзины */
 .cart-items-list::-webkit-scrollbar {
     width: 4px;
 }
@@ -368,11 +357,11 @@ h1 {
 /* --- 10. ФИКС ДЛЯ ПЛАНШЕТОВ --- */
 @media (min-width: 480px) and (max-width: 767px) {
     .product-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 в ряд на больших телефонах */
+        grid-template-columns: repeat(2, 1fr); 
     }
 }
 
-/* --- 11. ЭФФЕКТ НАЖАТИЯ (Haptic Feedback) --- */
+/* --- 11. ЭФФЕКТ НАЖАТИЯ --- */
 .buy-btn:active, .count-btn:active, .cart-fab:active {
     transform: scale(0.95);
     transition: 0.1s;
