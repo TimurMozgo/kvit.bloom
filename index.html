@@ -13,6 +13,7 @@
     </header>
 
     <div class="categories-container">
+        <button class="category-btn active" onclick="filterProducts('Все', this)">Всі</button>
         <button class="category-btn" onclick="filterProducts('Квіти', this)">Квіти</button>
         <button class="category-btn" onclick="filterProducts('Букети', this)">Букети</button>
         <button class="category-btn" onclick="filterProducts('Декор', this)">Декор</button>
@@ -21,14 +22,14 @@
     <h1 class="section-title" id="current-category-title">Всі товари</h1>
 
     <main>
-        <div id="products-container" class="products-grid"></div>
+        <div id="products-container" class="product-grid"></div>
     </main>
 
     <div class="cart-fab" id="cart-fab" onclick="openCart()" style="display: none;"> 
         <span id="fab-count">0</span>
     </div>
 
-   <div id="cart-modal" class="cart-overlay">
+    <div id="cart-modal" class="cart-overlay">
         <div class="cart-container" style="position: relative;">
             <button onclick="closeCart()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; z-index: 100; color: #333;">✕</button>
             
@@ -40,7 +41,7 @@
                 <div id="cart-items-list" class="cart-items-list">
                     </div>
                 
-                <div id="cart-total-container" class="cart-total-container" style="margin: 15px 0; font-size: 1.2em;">
+                <div id="cart-total-container" class="cart-total-container" style="margin: 15px 0; font-size: 1.2em; border-top: 1px solid #eee; padding-top: 10px;">
                     <b>Разом: </b><span id="cart-total-value">0 ₴</span>
                 </div>
 

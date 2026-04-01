@@ -250,20 +250,26 @@ async function finalCheckout() {
 }
 
 // 8. ФИЛЬТРАЦИЯ
-function filterProducts(category, btn) {
+// 8. ФІЛЬТРАЦІЯ ПО КАТЕГОРІЯХ
+function filterProducts(cat, btn) {
+    // 1. Підсвічуємо активну кнопку (міняємо стиль)
     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
+    // 2. Оновлюємо заголовок на сторінці
     const titleEl = document.getElementById('current-category-title');
-    if (titleEl) titleEl.innerText = category === 'Все' ? 'Всі товари' : category;
+    if (titleEl) titleEl.innerText = cat === 'Все' ? 'Всі товари' : cat;
 
+    // 3. Якщо дані ще не завантажились — нічого не робимо
     if (!window.allProducts) return;
 
-    if (category === 'Все') {
+    if (cat === 'Все') {
+        // Якщо натиснуто "Всі", показуємо повний список товарів
         showFiltered(window.allProducts);
     } else {
+        // Фільтруємо масив товарів за назвою категорії
         const filtered = window.allProducts.filter(item => 
-            (item['Категория'] || '').trim().toLowerCase() === category.toLowerCase()
+            (item['Категория'] || '').trim().toLowerCase() === cat.toLowerCase()
         );
         showFiltered(filtered);
     }
