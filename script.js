@@ -118,6 +118,7 @@ function updateTotal() {
 }
 
 // 5. МОДАЛКА И КОРЗИНА
+// 5. МОДАЛКА И КОРЗИНА
 function openCart() {
     const modal = document.getElementById('cart-modal');
     if (!modal) return;
@@ -125,12 +126,14 @@ function openCart() {
     const s1 = document.getElementById('cart-stage-1');
     const s2 = document.getElementById('cart-stage-2');
     
+    // Сброс на первый этап при открытии
     if(s1) s1.style.display = 'block';
     if(s2) s2.style.display = 'none';
     
     renderCartItems();
 
     modal.style.display = 'flex';
+    // Небольшая задержка для плавной анимации (класс active)
     setTimeout(() => modal.classList.add('active'), 10);
 }
 
@@ -140,51 +143,81 @@ function renderCartItems() {
     if (!list) return;
 
     list.innerHTML = ''; 
+    let hasItems = false;
+
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
+        // Проверяем, добавлен ли товар (виден ли счетчик)
         if (counter && counter.style.display === 'flex') {
             const title = card.querySelector('.product-title').innerText.trim();
             const price = card.querySelector('.product-price').innerText;
             const count = card.querySelector('.count-value').innerText;
+            hasItems = true;
+
+            // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: экранируем и одинарные, и двойные кавычки для функции удаления
+            const safeTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
             list.innerHTML += `
-                <div class="cart-item">
-                    <div><b>${title}</b><br><small>${count} шт. x ${price}</small></div>
-                    <button onclick="deleteProduct('${title.replace(/'/g, "\\'")}')" style="color:red; background:none; border:none; cursor:pointer; font-size:1.2em;">✕</button>
+                <div class="cart-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
+                    <div>
+                        <b style="font-size:0.95em;">${title}</b><br>
+                        <small style="color:#666;">${count} шт. x ${price}</small>
+                    </div>
+                    <button onclick="deleteProduct('${safeTitle}')" 
+                            style="color:#ff4d4d; background:none; border:none; cursor:pointer; font-size:1.5em; padding:5px 10px;">
+                        ✕
+                    </button>
                 </div>
             `;
         }
     });
 
     if (totalContainer) totalContainer.innerText = `${totalSum} ₴`;
+    
+    // Если в корзине внезапно стало пусто — закрываем её
+    if (!hasItems && totalSum === 0) {
+        closeCart();
+    }
 }
 
 function closeCart() {
     const modal = document.getElementById('cart-modal');
     if (modal) {
         modal.classList.remove('active');
+        // Ждем окончания анимации (300мс), прежде чем полностью скрыть
         setTimeout(() => {
             modal.style.display = 'none';
-            const s1 = document.getElementById('cart-stage-1');
-            const s2 = document.getElementById('cart-stage-2');
-            if(s1) s1.style.display = 'block';
-            if(s2) s2.style.display = 'none';
         }, 300);
     }
 }
 
 function deleteProduct(title) {
-    // Ищем карточку, сравнивая очищенные от пробелов заголовки
+    // Декодируем кавычки обратно для сравнения с текстом на карточке
+    const decodedTitle = title.replace(/&quot;/g, '"');
+    
     document.querySelectorAll('.product-card').forEach(card => {
         const cardTitle = card.querySelector('.product-title').innerText.trim();
-        if (cardTitle === title.trim()) {
-            card.querySelector('.counter-container').style.display = 'none';
-            card.querySelector('.buy-btn').style.display = 'block';
-            card.querySelector('.count-value').innerText = 1;
+        
+        if (cardTitle === decodedTitle) {
+            // Возвращаем карточку в исходное состояние (скрываем минус/плюс, показываем "Додати")
+            const counter = card.querySelector('.counter-container');
+            const buyBtn = card.querySelector('.buy-btn');
+            const countVal = card.querySelector('.count-value');
+
+            if (counter) counter.style.display = 'none';
+            if (buyBtn) buyBtn.style.display = 'block';
+            if (countVal) countVal.innerText = 1;
         }
     });
-    updateTotal();
-    totalSum > 0 ? renderCartItems() : closeCart();
+
+    updateTotal(); // Пересчитываем общую сумму
+    
+    // Если деньги еще есть — обновляем список, если 0 — закрываем корзину
+    if (totalSum > 0) {
+        renderCartItems();
+    } else {
+        closeCart();
+    }
 }
 
 // 6. ОТПРАВКА ДАННЫХ В N8N
