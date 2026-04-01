@@ -12,38 +12,36 @@ async function loadStore() {
     try {
         const response = await fetch(N8N_WEBHOOK_URL);
         const data = await response.json();
+        // Исправлено: жесткая проверка массива
         const items = Array.isArray(data) ? data : (data ? [data] : []);
 
         if (items.length > 0) {
-            renderProducts(items);
+            window.allProducts = items; 
+            showFiltered(items);
         } else {
             container.innerHTML = '<p style="text-align:center; padding:50px;">Товари тимчасово відсутні 🌸</p>';
         }
     } catch (error) {
+        console.error("Ошибка загрузки:", error);
         container.innerHTML = '<p style="text-align:center; padding:50px;">Помилка зв\'язку з сервером.</p>';
     }
 }
 
 // 2. ОТРИСОВКА КАРТОЧЕК
-function renderProducts(items) {
-    const container = document.getElementById('products-container');
-    if (!container) return;
-
-    window.allProducts = items; 
-    container.className = 'product-grid'; 
-    showFiltered(items);
-}
-
 function showFiltered(items) {
     const container = document.getElementById('products-container');
+    if (!container) return;
     container.innerHTML = ''; 
 
     items.forEach(item => {
-        const id = item['ID'] || Math.random(); // Используем ID из таблицы
-        const title = (item['Название'] || 'Без назви').trim();
-        const price = parseInt(item['Цена']) || 0;
-        const quantity = parseInt(item['Кол-во']) || 0;
-        const status = item['Статус'] || 'Active';
+        // Защита от пустых строк в таблице
+        if (!item['Название']) return;
+
+        const id = item['ID'] || `id-${Math.random().toString(36).substr(2, 9)}`;
+        const title = String(item['Название']).trim();
+        const price = parseInt(String(item['Цена']).replace(/\D/g, '')) || 0;
+        const quantity = parseInt(String(item['Кол-во']).replace(/\D/g, '')) || 0;
+        const status = (item['Статус'] || 'Active').trim();
         const img = item['Фото'] || ''; 
 
         if (quantity <= 0 || status !== 'Active') return;
@@ -63,8 +61,7 @@ function showFiltered(items) {
                         <button class="count-btn" onclick="changeCount(this, 1)">+</button>
                     </div>
                 </div>
-            </div>
-        `;
+            </div>`;
     });
 }
 
@@ -95,14 +92,14 @@ function changeCount(btn, delta) {
 
     updateTotal();
     
-    // Обновляем список в корзине только если модалка открыта
+    // Обновляем список ТОЛЬКО если корзина уже видна
     const modal = document.getElementById('cart-modal');
-    if (modal && modal.classList.contains('active')) {
+    if (modal && modal.style.display === 'flex') {
         renderCartItems();
     }
 }
 
-// 4. ОБНОВЛЕНИЕ СУММЫ (БЕЗ ПЕРЕРИСОВКИ ВСЕГО)
+// 4. ОБНОВЛЕНИЕ СУММЫ (БЕЗОПАСНОЕ)
 function updateTotal() {
     const fab = document.getElementById('cart-fab');
     const fabCount = document.getElementById('fab-count');
@@ -116,7 +113,9 @@ function updateTotal() {
         if (counter && counter.style.display === 'flex') {
             const priceText = card.querySelector('.product-price').innerText;
             const price = parseInt(priceText.replace(/\D/g, '')) || 0;
-            const count = parseInt(card.querySelector('.count-value').innerText) || 0;
+            const countText = card.querySelector('.count-value').innerText;
+            const count = parseInt(countText) || 0;
+            
             tempTotal += (price * count);
             totalItems += count;
         }
@@ -129,9 +128,7 @@ function updateTotal() {
         if (fabCount) fabCount.innerText = totalItems;
     }
     
-    if (totalContainer) {
-        totalContainer.innerText = `${totalSum} ₴`;
-    }
+    if (totalContainer) totalContainer.innerText = `${totalSum} ₴`;
 }
 
 // 5. МОДАЛКА И КОРЗИНА
@@ -139,8 +136,10 @@ function openCart() {
     const modal = document.getElementById('cart-modal');
     if (!modal) return;
 
-    document.getElementById('cart-stage-1').style.display = 'block';
-    document.getElementById('cart-stage-2').style.display = 'none';
+    const s1 = document.getElementById('cart-stage-1');
+    const s2 = document.getElementById('cart-stage-2');
+    if(s1) s1.style.display = 'block';
+    if(s2) s2.style.display = 'none';
     
     renderCartItems();
 
@@ -168,8 +167,7 @@ function renderCartItems() {
                 <div class="cart-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
                     <div><b>${title}</b><br><small>${count} шт. x ${price}</small></div>
                     <button onclick="deleteProductById('${id}')" style="color:#ff4d4d; background:none; border:none; cursor:pointer; font-size:1.5em; padding:5px;">✕</button>
-                </div>
-            `;
+                </div>`;
         }
     });
 
@@ -184,7 +182,6 @@ function closeCart() {
     }
 }
 
-// Удаление по ID — теперь работает железно
 function deleteProductById(id) {
     const card = document.querySelector(`.product-card[data-id="${id}"]`);
     if (card) {
@@ -196,20 +193,20 @@ function deleteProductById(id) {
     renderCartItems();
 }
 
-// 6. ОТПРАВКА ДАННЫХ В N8N
+// 6. ОТПРАВКА В N8N
 async function sendReduceStockRequest(items) {
     try {
         await fetch(N8N_REDUCE_STOCK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cart: items }) // Упростил структуру для n8n
+            body: JSON.stringify({ cart: items })
         });
     } catch (error) {
-        console.error("Ошибка списания:", error);
+        console.error("Помилка списання:", error);
     }
 }
 
-// 7. ЛОГИКА ОФОРМЛЕНИЯ ЗАКАЗА
+// 7. ОФОРМЛЕНИЕ
 function goToCheckout() {
     if (totalSum <= 0) return;
     document.getElementById('cart-stage-1').style.display = 'none';
@@ -227,7 +224,7 @@ async function finalCheckout() {
     const address = document.getElementById('customer-address')?.value.trim() || "";
 
     if (!name || !phone) {
-        alert("Будь ласка, введіть ім'я та номер телефону 🌸");
+        alert("Будь ласка, введіть дані 🌸");
         return;
     }
 
@@ -272,8 +269,5 @@ function filterProducts(category, btn) {
     }
 }
 
-window.onclick = (event) => {
-    if (event.target === document.getElementById('cart-modal')) closeCart();
-};
-
+window.onclick = (e) => { if (e.target === document.getElementById('cart-modal')) closeCart(); };
 window.onload = loadStore;
