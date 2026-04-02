@@ -40,52 +40,32 @@ async function loadStore() {
 function showFiltered(items) {
     const container = document.getElementById('products-container');
     if (!container) return;
-    
     container.innerHTML = ''; 
 
     items.forEach(item => {
         if (!item['Название']) return;
         if (item['Статус'] && item['Статус'].trim() !== 'Active') return;
 
-        // 1. ЧИСТИМ ДАННЫЕ (Чтобы кнопки не ломались)
         const id = item['ID'] || `id-${Math.random().toString(36).substr(2, 9)}`;
         const title = String(item['Название']).trim();
         const price = parseInt(String(item['Цена']).replace(/\D/g, '')) || 0;
         const img = item['Фото'] || '';
-        
-        // Описание: убираем все виды кавычек и переносов, чтобы JS не спотыкался
-        const rawDesc = item['Описание'] || 'Преміальний букет зі свіжих квітів для ваших особливих подій.';
-        const cleanDesc = rawDesc
-            .replace(/'/g, "’")    // Заменяем одинарную кавычку на апостроф
-            .replace(/"/g, "“")    // Заменяем двойную кавычку
-            .replace(/\r?\n|\r/g, " "); // Убираем переносы строк (из-за них часто не работает)
+        const rawDesc = item['Описание'] || 'Преміальний букет зі свіжих квітів.';
 
-        const cleanTitle = title.replace(/'/g, "’").replace(/"/g, "“");
+        // Экранируем всё, что может сломать кнопку (особенно для Нежности)
+        const cleanTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const cleanDesc = rawDesc.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\r?\n|\r/g, " ");
 
-        // 2. ЛОГИКА ОСТАТКОВ
-        const stock = parseInt(item['Количество']) || 0;
-        let stockMessage = '';
-        if (stock > 0 && stock <= 5) {
-            stockMessage = `<p class="stock-warning">Залишилося всього: ${stock} шт.</p>`;
-        }
-
-        // 3. СТРУКТУРА КАРТОЧКИ (С правильными размерами)
         container.innerHTML += `
             <div class="product-card" data-id="${id}">
-                <div class="product-image-container" style="aspect-ratio: 1/1; overflow: hidden; background: #0a0a0a;">
-                    ${img ? `<img src="${img}" class="product-image" alt="${cleanTitle}" 
-                             style="width: 100%; height: 100%; object-fit: cover;"
-                             onerror="this.parentElement.innerHTML='🌸';">` : '🌸'}
+                <div class="product-image-container">
+                    ${img ? `<img src="${img}" class="product-image" alt="${cleanTitle}" onerror="this.parentElement.innerHTML='🌸';">` : '🌸'}
                 </div>
                 <div class="product-info">
-                    <h3 class="product-title">${cleanTitle}</h3>
-                    ${stockMessage}
+                    <h3 class="product-title">${title}</h3>
                     <p class="product-price">${price} ₴</p>
                     
-                    <button class="details-btn" 
-                        onclick="openProductDetails('${cleanTitle}', '${img}', '${cleanDesc}', ${price})">
-                        Докладніше
-                    </button>
+                    <button class="details-btn" onclick="openProductDetails('${cleanTitle}', '${img}', '${cleanDesc}', ${price})">Докладніше</button>
                     
                     <button class="buy-btn" onclick="showCounter(this)">Додати</button>
                     <div class="counter-container" style="display: none;">
@@ -96,6 +76,42 @@ function showFiltered(items) {
                 </div>
             </div>`;
     });
+}
+
+// И обнови саму функцию открытия, чтобы картинка была в обертке
+function openProductDetails(title, img, desc, price) {
+    let modal = document.getElementById('details-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'details-modal';
+        modal.className = 'cart-overlay';
+        document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+        <div class="cart-container">
+            <button class="close-details" onclick="closeDetails()">✕</button>
+            <div class="details-img-wrapper">
+                <img src="${img}">
+            </div>
+            <h2 style="color:#CBA35C; font-size:18px; text-transform:uppercase;">${title}</h2>
+            <p style="color:#AAA; font-size:14px; line-height:1.6;">${desc}</p>
+            <div class="details-footer">
+                <span style="font-size:22px; color:#CBA35C; font-weight:700;">${price} ₴</span>
+                <button class="checkout-btn" style="width:auto; margin:0; padding:10px 20px;" onclick="closeDetails()">Закрити</button>
+            </div>
+        </div>
+    `;
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function closeDetails() {
+    const modal = document.getElementById('details-modal');
+    if(modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
 }
 
 // 3. МОДАЛКА ПОДРОБНОСТЕЙ

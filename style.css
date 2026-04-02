@@ -4,26 +4,24 @@
    =================================================
 */
 
-/* --- ИМПОРТ ПРЕМИАЛЬНОГО ШРИФТА (Montserrat) --- */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;900&display=swap');
 
-/* --- 1. ОСНОВНЫЕ НАСТРОЙКИ --- */
 body { 
-    font-family: 'Montserrat', sans-serif; /* Статусный шрифт */
-    background-color: #111111; /* Глубокий матовый черный */
-    color: #F0F0F0; /* Молочно-белый текст для чтения */
+    font-family: 'Montserrat', sans-serif; 
+    background-color: #111111; 
+    color: #F0F0F0; 
     margin: 0; 
     overflow-x: hidden;
-    padding-bottom: 120px; /* Место под FAB */
-    letter-spacing: 0.03em; /* Легкая разрядка букв */
+    padding-bottom: 120px; 
+    letter-spacing: 0.03em; 
 }
 
-/* --- 2. ШАПКА (HEADER) --- */
+/* --- ШАПКА --- */
 header { 
-    background-color: #000000; /* Чистый черный */
+    background-color: #000000; 
     padding: 20px 15px; 
     text-align: center; 
-    border-bottom: 1px solid #333; /* Тонкая дорогая рамка */
+    border-bottom: 1px solid #333; 
     position: sticky; 
     top: 0; 
     z-index: 100;
@@ -31,404 +29,123 @@ header {
 
 .logo { 
     font-weight: 900;
-    color: #CBA35C; /* Матовое Золото */
+    color: #CBA35C; 
     text-transform: uppercase;
     font-size: 26px; 
-    letter-spacing: 4px; /* Сильная разрядка для премиальности */
+    letter-spacing: 4px; 
 }
 
-.sub-logo {
-    font-size: 10px;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-top: 2px;
-}
+.sub-logo { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
 
-/* --- КАТЕГОРИИ (Luxury Фильтр) --- */
+/* --- ФИЛЬТРЫ --- */
 .categories-container {
-    display: flex;
-    gap: 10px;
-    padding: 20px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    background-color: #111;
-    position: sticky;
-    top: 75px;
-    z-index: 10;
-    border-bottom: 1px solid #222;
+    display: flex; gap: 10px; padding: 20px; overflow-x: auto; scrollbar-width: none;
+    background-color: #111; position: sticky; top: 75px; z-index: 10; border-bottom: 1px solid #222;
 }
-
 .categories-container::-webkit-scrollbar { display: none; }
 
 .category-btn {
-    padding: 10px 20px;
-    border: 1px solid #444; /* Тусклая рамка */
-    border-radius: 4px; /* Строгие углы */
-    background: transparent;
-    color: #AAA;
-    font-size: 12px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all 0.4s ease;
+    padding: 10px 20px; border: 1px solid #444; border-radius: 4px;
+    background: transparent; color: #AAA; font-size: 12px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; cursor: pointer; transition: 0.4s;
 }
+.category-btn:hover { border-color: #CBA35C; color: #CBA35C; }
+.category-btn.active { background-color: #CBA35C; color: #000; border-color: #CBA35C; font-weight: 700; }
 
-/* Эффект при наведении */
-.category-btn:hover {
-    border-color: #CBA35C;
-    color: #CBA35C;
-}
-
-/* Активная категория */
-.category-btn.active {
-    background-color: #CBA35C; /* Золотой фон */
-    color: #000; /* Черный текст на золотом */
-    border-color: #CBA35C;
-    font-weight: 700;
-    box-shadow: 0 4px 15px rgba(203, 163, 92, 0.2);
-}
-
-.section-title {
-    padding: 20px 20px 5px;
-    margin: 0;
-    font-size: 18px;
-    color: #F0F0F0;
-    font-weight: 300; /* Тонкое начертание */
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    text-align: center;
-}
-
+/* --- СЕТКА --- */
 .product-grid { 
-    display: grid;
-
-    grid-template-columns: 1fr; 
-    gap: 25px; 
-    padding: 20px;
-
-    max-width: 1200px; 
-    margin: 0 auto;
+    display: grid; grid-template-columns: 1fr; gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto;
 }
 
 @media (min-width: 768px) {
-    .product-grid {
-        /* На планшетах и компах делаем 3 или 4 колонки */
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-        gap: 40px; /* Больше пространства между товарами на десктопе */
-    }
+    .product-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 40px; }
 }
 
 @media (min-width: 1024px) {
-    .product-grid {
-        max-width: 1200px; /* Даем больше пространства на компе */
-        grid-template-columns: repeat(3, 1fr); /* 3 в ряд, чтобы было солидно */
-        gap: 40px;
-    }
+    .product-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* --- 4. КАРТОЧКА ТОВАРА (Luxury Design) --- */
+/* --- КАРТОЧКА --- */
 .product-card {
-    background-color: #000000; /* Черный фон карточки */
-    border-radius: 8px; /* Строгие углы */
-    padding: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Глубокая тень */
-    border: 1px solid #222; /* Едва заметная рамка */
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    height: 100%; 
-    box-sizing: border-box;
-    text-align: center;
-    align-self: start;
-    position: relative;
-    overflow: hidden;
+    background-color: #000; border-radius: 8px; padding: 15px; border: 1px solid #222;
+    transition: 0.3s; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; text-align: center;
 }
-
-/* Легкое свечение при наведении */
-.product-card:hover {
-    transform: translateY(-5px);
-    border-color: #CBA35C;
-    box-shadow: 0 15px 40px rgba(203, 163, 92, 0.15);
-}
+.product-card:hover { transform: translateY(-5px); border-color: #CBA35C; }
 
 .product-image-container {
-    width: 100%;
-    aspect-ratio: 1 / 1; /* Квадрат — это золотой стандарт люкса */
-    background-color: #0a0a0a;
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid #222;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 100%; aspect-ratio: 1 / 1; background-color: #0a0a0a; border-radius: 4px; overflow: hidden;
+    border: 1px solid #222; display: flex; align-items: center; justify-content: center;
 }
+.product-image { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+.product-card:hover .product-image { transform: scale(1.05); }
 
-.product-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Картинка заполняет квадрат без дырок */
-    transition: transform 0.5s ease;
-}
+.product-title { font-weight: 500; font-size: 14px; color: #F0F0F0; margin: 5px 0; text-transform: uppercase; letter-spacing: 1px; min-height: 2.8em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.product-price { color: #CBA35C; font-size: 20px; font-weight: 700; margin: 5px 0 15px 0; }
 
-.product-card:hover .product-image {
-    transform: scale(1.05); /* Легкий зум картинки */
-}
-
-.product-title { 
-    font-weight: 500; 
-    font-size: 14px; 
-    color: #F0F0F0;
-    margin: 5px 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    /* Ограничение в 2 строки */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;  
-    overflow: hidden;
-    min-height: 2.8em; 
-}
-
-/* Наша фича: серый текст остатков (причесали) */
-.stock-warning {
-    font-size: 11px;
-    color: #666; /* Темно-серый, едва заметный */
-    margin: -2px 0 10px 0;
-    font-weight: 300;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.product-price { 
-    color: #CBA35C; /* Золотая цена */
-    font-size: 20px; 
-    font-weight: 700; 
-    margin: 5px 0 15px 0;
-    letter-spacing: 1px;
-}
-
-/* --- 5. КНОПКИ И СЧЕТЧИКИ (Строго) --- */
-.buy-btn, .counter-container {
-    height: 45px;
-    width: 100%;
-    border-radius: 4px; /* Строго */
-}
-
+/* --- КНОПКИ --- */
 .buy-btn {
-    background: transparent;
-    color: #CBA35C; 
-    border: 2px solid #CBA35C; /* Золотая рамка */
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    height: 45px; width: 100%; background: transparent; color: #CBA35C; border: 2px solid #CBA35C;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: 12px; cursor: pointer; border-radius: 4px;
 }
+.buy-btn:hover { background-color: #CBA35C; color: #000; }
 
-.buy-btn:hover { 
-    background-color: #CBA35C; /* Заливка при наведении */
-    color: #000;
+.details-btn {
+    width: 100%; background: transparent; color: #888; border: 1px solid #222; padding: 10px;
+    border-radius: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; cursor: pointer; transition: 0.3s;
 }
+.details-btn:hover { border-color: #CBA35C; color: #CBA35C; }
 
-.counter-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #111;
-    border: 1px solid #333;
-    padding: 0 4px;
-    box-sizing: border-box;
-}
+.counter-container { display: flex; align-items: center; justify-content: space-between; background-color: #111; border: 1px solid #333; height: 45px; padding: 0 4px; }
+.count-btn { width: 36px; height: 36px; border: none; background-color: #222; color: #CBA35C; font-weight: bold; cursor: pointer; }
 
-.count-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 4px;
-    border: none;
-    background-color: #222;
-    color: #CBA35C;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 16px;
-    transition: 0.2s;
-}
-
-.count-btn:hover { background-color: #CBA35C; color: #000; }
-
-.count-value { font-weight: 700; color: #F0F0F0; font-size: 16px; }
-
-/* --- 6. КОРЗИНА (MODAL LUXURY) --- */
-.cart-fab {
-    position: fixed;
-    bottom: 30px;
-    right: 20px;
-    background-color: #CBA35C; /* Золотой FAB */
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #000;
-    box-shadow: 0 10px 30px rgba(203, 163, 92, 0.4);
-    z-index: 999;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.cart-fab:hover { transform: scale(1.05); box-shadow: 0 15px 40px rgba(203, 163, 92, 0.5); }
-
-
-.cart-fab::after { 
-    content: '🛒'; /* Можно оставить эмодзи или заменить на SVG, если умеешь */
-    font-size: 28px;
-    filter: sepia(1) saturate(5) hue-rotate(10deg); /* Накладываем золотистый фильтр на эмодзи */
-}
-
-#fab-count {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: #F0F0F0; /* Белый счетчик */
-    color: #000;
-    padding: 4px 8px;
-    border-radius: 50%;
-    font-size: 12px;
-    font-weight: 900;
-    min-width: 15px;
-    text-align: center;
-}
-
-/* Оверлей с размытием (Glassmorphism) */
+/* --- КОРЗИНА И МОДАЛКИ (ФИКС РАЗМЕРОВ КАРТИНКИ) --- */
 .cart-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(5px); /* Трендовое размытие */
-    -webkit-backdrop-filter: blur(5px);
-    z-index: 2000;
-    align-items: flex-end;
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    z-index: 2000; align-items: center; justify-content: center; padding: 20px;
 }
-
 .cart-overlay.active { display: flex; }
 
 .cart-container {
-    background-color: #000;
+    background-color: #000; width: 100%; max-width: 500px; max-height: 90vh;
+    border-radius: 15px; padding: 25px; overflow-y: auto; border: 1px solid #CBA35C;
+    position: relative;
+}
+
+/* ФИКС ДЛЯ КНОПКИ ДОКЛАДНІШЕ: РАЗМЕР КАРТИНКИ */
+.details-img-wrapper {
     width: 100%;
-    max-height: 85vh;
-    border-radius: 20px 20px 0 0;
-    padding: 25px;
-    overflow-y: auto;
-    box-sizing: border-box;
-    border-top: 2px solid #CBA35C; /* Золотая полоса сверху */
-}
-
-.cart-header h2 { color: #CBA35C; text-transform: uppercase; letter-spacing: 2px; }
-
-.cart-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid #222;
-}
-
-.cart-item b { color: #F0F0F0; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
-.cart-item small { color: #888; }
-
-.checkout-btn {
-    width: 100%;
-    padding: 18px;
-    background-color: #CBA35C; /* Золотая кнопка заказа */
-    color: #000;
-    border: none;
-    border-radius: 4px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    font-size: 14px;
-    margin-top: 20px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.checkout-btn:hover { background-color: #F0F0F0; color: #000; }
-
-/* Форма заказа (Luxury Инпуты) */
-.order-form input, .order-form textarea {
-    background-color: #111 !important;
-    border: 1px solid #333 !important;
-    color: #F0F0F0 !important;
-    border-radius: 4px !important;
-    padding: 15px !important;
-    margin-bottom: 15px !important;
-    font-family: 'Montserrat', sans-serif;
-}
-
-.order-form input:focus, .order-form textarea:focus {
-    border-color: #CBA35C !important;
-    outline: none;
-}
-
-/* Skeleton Luxury */
-.skeleton {
-    background: #111;
-    background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* Анимация карточек */
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.product-card { animation: fadeInUp 0.4s ease forwards; }
-
-
-/* Докладніше */
-
-.details-btn {
-    width: 100%;
-    background: transparent;
-    color: #888;
+    aspect-ratio: 1/1; /* Строго квадрат */
+    max-height: 350px; /* Чтобы не вылетала за экран десктопа */
+    margin: 0 auto 20px;
+    border-radius: 10px;
+    overflow: hidden;
     border: 1px solid #222;
-    padding: 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: 0.3s;
+}
+.details-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.details-btn:hover {
-    border-color: #CBA35C;
-    color: #CBA35C;
-}
-
-/* Стили для закрытия подробностей */
 .close-details {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: #111;
-    color: #CBA35C;
-    border: 1px solid #333;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 100;
+    position: absolute; top: 15px; right: 15px; background: #222; color: #CBA35C;
+    border: 1px solid #444; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; z-index: 100;
 }
+
+/* ФУТЕР МОДАЛКИ */
+.details-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 20px; padding-top: 15px; border-top: 1px solid #222;
+}
+
+/* --- КОРЗИНА FAB --- */
+.cart-fab {
+    position: fixed; bottom: 30px; right: 20px; background-color: #CBA35C;
+    width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 30px rgba(203, 163, 92, 0.4); z-index: 999; cursor: pointer;
+}
+.cart-fab::after { content: '🛒'; font-size: 28px; }
+
+/* Остальное (формы, инпуты и т.д.) */
+.order-form input { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 15px; margin-bottom: 10px; box-sizing: border-box; }
