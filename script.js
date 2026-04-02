@@ -6,30 +6,34 @@ let totalSum = 0;
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
 const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/613a3f51-2e98-4f32-81e5-ebadd7f583eb'; 
 
-// 1. ЗАГРУЗКА ДАННЫХ
+// 1. ЗАГРУЗКА ДАННЫХ (Luxury Version)
 async function loadStore() {
     const container = document.getElementById('products-container');
     if (!container) return;
     
-    // Сразу ставим правильный класс сетки, чтобы не дергалось при загрузке
     container.className = 'product-grid';
-    container.innerHTML = '<div class="skeleton" style="grid-column: 1/-1; height: 200px; width: 100%;"></div>';
+    // Заменяем скелетон на стильную надпись LOADING в золотом цвете
+    container.innerHTML = `
+        <div style="grid-column: 1/-1; padding: 100px 20px; text-align: center; color: #CBA35C; text-transform: uppercase; letter-spacing: 5px; font-weight: 300; font-size: 14px;">
+            <div class="skeleton" style="height: 2px; width: 50px; margin: 0 auto 20px;"></div>
+            Loading Boutique
+        </div>`;
 
     try {
         const response = await fetch(N8N_WEBHOOK_URL);
         const data = await response.json();
         
-        // Превращаем данные в массив, даже если пришел один объект
         window.allProducts = Array.isArray(data) ? data : (data ? [data] : []);
 
         if (window.allProducts.length > 0) {
             showFiltered(window.allProducts);
         } else {
-            container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:50px;">Товари тимчасово відсутні 🌸</p>';
+            // Если товаров нет — пишем это строго и без эмодзи
+            container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:100px; color: #666; text-transform: uppercase; letter-spacing: 2px;">Колекція оновлюється</p>';
         }
     } catch (error) {
-        console.error("Ошибка сети:", error);
-        container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:50px;">Помилка зв\'язку з сервером.</p>';
+        console.error("Помилка мережі:", error);
+        container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:100px; color: #CBA35C; text-transform: uppercase; letter-spacing: 2px;">Тимчасова помилка зв\'язку</p>';
     }
 }
 
