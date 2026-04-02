@@ -1,5 +1,5 @@
 /* ФИНАЛЬНЫЙ СКРИПТ: KVIT.BLOOM 
-    Luxury Edition: Сетка, Фильтры, Корзина, Остатки и Подробности
+   Luxury Edition: Сетка, Фильтры, Корзина, Остатки и Подробности
 */
 
 let totalSum = 0;
@@ -12,26 +12,19 @@ async function loadStore() {
     if (!container) return;
     
     container.className = 'product-grid';
-    container.innerHTML = `
-        <div style="grid-column: 1/-1; padding: 100px 20px; text-align: center; color: #CBA35C; text-transform: uppercase; letter-spacing: 5px; font-weight: 300; font-size: 14px;">
-            <div class="skeleton" style="height: 2px; width: 50px; margin: 0 auto 20px;"></div>
-            Loading Boutique
-        </div>`;
+    container.innerHTML = `<div style="grid-column: 1/-1; padding: 100px 20px; text-align: center; color: #CBA35C;">Loading Boutique...</div>`;
 
     try {
         const response = await fetch(N8N_WEBHOOK_URL);
         const data = await response.json();
-        
         window.allProducts = Array.isArray(data) ? data : (data ? [data] : []);
-
         if (window.allProducts.length > 0) {
             showFiltered(window.allProducts);
         } else {
-            container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:100px; color: #666; text-transform: uppercase; letter-spacing: 2px;">Колекція оновлюється</p>';
+            container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: #666;">Колекція оновлюється</p>';
         }
     } catch (error) {
-        console.error("Помилка мережі:", error);
-        container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:100px; color: #CBA35C; text-transform: uppercase; letter-spacing: 2px;">Тимчасова помилка зв\'язку</p>';
+        container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: #CBA35C;">Помилка зв\'язку</p>';
     }
 }
 
@@ -42,8 +35,7 @@ function showFiltered(items) {
     container.innerHTML = ''; 
 
     items.forEach(item => {
-        if (!item['Название']) return;
-        if (item['Статус'] && item['Статус'].trim() !== 'Active') return;
+        if (!item['Название'] || (item['Статус'] && item['Статус'].trim() !== 'Active')) return;
 
         const id = item['ID'] || `id-${Math.random().toString(36).substr(2, 9)}`;
         const title = String(item['Название']).trim();
@@ -62,9 +54,7 @@ function showFiltered(items) {
                 <div class="product-info">
                     <h3 class="product-title">${title}</h3>
                     <p class="product-price">${price} ₴</p>
-                    
                     <button class="details-btn" onclick="openProductDetails('${cleanTitle}', '${img}', '${cleanDesc}', ${price})">Докладніше</button>
-                    
                     <button class="buy-btn" onclick="showCounter(this)">Додати</button>
                     <div class="counter-container" style="display: none;">
                         <button class="count-btn" onclick="changeCount(this, -1)">-</button>
@@ -76,7 +66,7 @@ function showFiltered(items) {
     });
 }
 
-// 3. МОДАЛКА ПОДРОБНОСТЕЙ (Обновленная с кнопкой Додати)
+// 3. МОДАЛКА ПОДРОБНОСТЕЙ
 function openProductDetails(title, img, desc, price) {
     let detailsModal = document.getElementById('details-modal');
     if (!detailsModal) {
@@ -89,26 +79,18 @@ function openProductDetails(title, img, desc, price) {
     detailsModal.innerHTML = `
         <div class="cart-container details-container">
             <button class="close-details" onclick="closeDetails()">✕</button>
-            <div class="details-img-wrapper">
-                <img src="${img}" class="product-image">
-            </div>
-            <h2 style="color:#CBA35C; text-transform: uppercase; letter-spacing: 2px; font-size: 20px;">${title}</h2>
-            <p style="color:#888; line-height: 1.6; font-size: 14px; margin: 15px 0;">${desc}</p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:30px; border-top: 1px solid #222; padding-top: 20px;">
+            <div class="details-img-wrapper"><img src="${img}" class="product-image"></div>
+            <h2 style="color:#CBA35C; text-transform: uppercase; font-size: 20px;">${title}</h2>
+            <p style="color:#888; font-size: 14px; margin: 15px 0;">${desc}</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; border-top: 1px solid #222; padding-top: 20px;">
                 <span style="font-size:24px; color:#CBA35C; font-weight:700;">${price} ₴</span>
-                <button class="checkout-btn" style="width:auto; padding: 12px 30px; margin:0;" 
-                        onclick="addToCartFromDetails('${title}'); closeDetails();">
-                    Додати
-                </button>
+                <button class="checkout-btn" style="width:auto; padding: 12px 30px; margin:0;" onclick="addToCartFromDetails('${title}'); closeDetails();">Додати</button>
             </div>
-        </div>
-    `;
-
+        </div>`;
     detailsModal.style.display = 'flex';
     setTimeout(() => detailsModal.classList.add('active'), 10);
 }
 
-// Функция-связка модалки с корзиной
 function addToCartFromDetails(title) {
     document.querySelectorAll('.product-card').forEach(card => {
         if (card.querySelector('.product-title').innerText.trim() === title) {
@@ -144,7 +126,6 @@ function showCounter(btn) {
 function changeCount(btn, delta) {
     const card = btn.closest('.product-card');
     const countDisplay = card.querySelector('.count-value');
-    
     let currentCount = parseInt(countDisplay.innerText) || 1;
     let newCount = currentCount + delta;
 
@@ -155,10 +136,8 @@ function changeCount(btn, delta) {
     } else {
         countDisplay.innerText = newCount;
     }
-
     updateTotal();
-    const modal = document.getElementById('cart-modal');
-    if (modal && modal.classList.contains('active')) renderCartItems();
+    renderCartItems();
 }
 
 // 5. ОБНОВЛЕНИЕ ИТОГОВ
@@ -166,15 +145,12 @@ function updateTotal() {
     const fab = document.getElementById('cart-fab');
     const fabCount = document.getElementById('fab-count');
     const totalContainer = document.getElementById('cart-total-value');
-    
-    let tempTotal = 0;
-    let totalItemsCount = 0;
+    let tempTotal = 0, totalItemsCount = 0;
 
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
-            const priceText = card.querySelector('.product-price').innerText;
-            const price = parseInt(priceText.replace(/\D/g, '')) || 0;
+            const price = parseInt(card.querySelector('.product-price').innerText.replace(/\D/g, '')) || 0;
             const count = parseInt(card.querySelector('.count-value').innerText) || 0;
             tempTotal += (price * count);
             totalItemsCount += count;
@@ -189,7 +165,7 @@ function updateTotal() {
     if (totalContainer) totalContainer.innerText = `${totalSum} ₴`;
 }
 
-// 6. КОРЗИНА
+// 6. КОРЗИНА И НАВИГАЦИЯ
 function openCart() {
     const modal = document.getElementById('cart-modal');
     if (!modal) return;
@@ -198,6 +174,26 @@ function openCart() {
     renderCartItems();
     modal.style.display = 'flex';
     setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function closeCart() {
+    const modal = document.getElementById('cart-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+}
+
+function goToCheckout() {
+    if (totalSum <= 0) return;
+    document.getElementById('cart-stage-1').style.display = 'none';
+    document.getElementById('cart-stage-2').style.display = 'block';
+}
+
+// ФУНКЦИЯ ДЛЯ КНОПКИ НАЗАД (СОВПАДАЕТ С HTML)
+function backToCart() {
+    document.getElementById('cart-stage-2').style.display = 'none';
+    document.getElementById('cart-stage-1').style.display = 'block';
 }
 
 function renderCartItems() {
@@ -215,7 +211,6 @@ function renderCartItems() {
             const count = card.querySelector('.count-value').innerText;
             const img = card.querySelector('.product-image')?.src || '';
             hasItems = true;
-
             list.innerHTML += `
                 <div class="cart-item-row">
                     <div class="cart-item-info">
@@ -243,35 +238,17 @@ function deleteProductById(id) {
     renderCartItems();
 }
 
-function closeCart() {
-    const modal = document.getElementById('cart-modal');
-    if (modal) {
-        modal.classList.remove('active');
-        setTimeout(() => { modal.style.display = 'none'; }, 300);
-    }
-}
-
-// 7. ЗАКАЗ
-function goToCheckout() {
-    if (totalSum <= 0) return;
-    document.getElementById('cart-stage-1').style.display = 'none';
-    document.getElementById('cart-stage-2').style.display = 'block';
-}
-
+// 7. ФИНАЛЬНЫЙ ЗАКАЗ (БЕЗ АДРЕСА)
 async function finalCheckout() {
     const name = document.getElementById('customer-name').value.trim();
     const phone = document.getElementById('customer-phone').value.trim();
-    const address = document.getElementById('customer-address')?.value.trim() || "";
 
     if (!name || !phone) {
         alert("Будь ласка, введіть ім'я та номер телефону 🌸");
         return;
     }
 
-    let message = `👤 *Клієнт:* ${name}\n📞 *Телефон:* ${phone}\n`;
-    if (address) message += `📍 *Адреса:* ${address}\n`;
-    message += `\n🛒 *Замовлення:*\n`;
-
+    let message = `👤 *Клієнт:* ${name}\n📞 *Телефон:* ${phone}\n\n🛒 *Замовлення:*\n`;
     let cartItems = [];
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
@@ -282,33 +259,26 @@ async function finalCheckout() {
             cartItems.push({ name: title, quantity: count, id: card.getAttribute('data-id') });
         }
     });
-
     message += `\n💰 *Разом: ${totalSum} ₴*`;
     
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: cartItems, customer: name, phone: phone })
-    }).catch(e => console.error("Ошибка n8n:", e));
+    }).catch(e => console.error(e));
 
     window.location.href = `https://t.me/tinellton?text=${encodeURIComponent(message)}`;
 }
 
-// 8. ФИЛЬТРЫ
+// 8. ФИЛЬТРЫ И ИНИЦИАЛИЗАЦИЯ
 function filterProducts(category, btn) {
     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
     const titleEl = document.getElementById('current-category-title');
     if (titleEl) titleEl.innerText = category === 'Все' ? 'Всі товари' : category;
     if (!window.allProducts) return;
-    if (category === 'Все') {
-        showFiltered(window.allProducts);
-    } else {
-        const filtered = window.allProducts.filter(item => 
-            (item['Категория'] || '').trim().toLowerCase() === category.toLowerCase()
-        );
-        showFiltered(filtered);
-    }
+    const filtered = category === 'Все' ? window.allProducts : window.allProducts.filter(item => (item['Категория'] || '').trim().toLowerCase() === category.toLowerCase());
+    showFiltered(filtered);
 }
 
 window.onclick = (event) => {
