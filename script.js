@@ -1,5 +1,5 @@
 /* ФИНАЛЬНЫЙ СКРИПТ: KVIT.BLOOM 
-   Luxury Edition: Сетка, Фильтры, Корзина, Остатки и Подробности
+    Luxury Edition: Сетка, Фильтры, Корзина, Остатки и Подробности
 */
 
 let totalSum = 0;
@@ -36,7 +36,6 @@ async function loadStore() {
 }
 
 // 2. ОТРИСОВКА КАРТОЧЕК
-
 function showFiltered(items) {
     const container = document.getElementById('products-container');
     if (!container) return;
@@ -52,7 +51,6 @@ function showFiltered(items) {
         const img = item['Фото'] || '';
         const rawDesc = item['Описание'] || 'Преміальний букет зі свіжих квітів.';
 
-        // Экранируем всё, что может сломать кнопку (особенно для Нежности)
         const cleanTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         const cleanDesc = rawDesc.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\r?\n|\r/g, " ");
 
@@ -78,43 +76,7 @@ function showFiltered(items) {
     });
 }
 
-// И обнови саму функцию открытия, чтобы картинка была в обертке
-function openProductDetails(title, img, desc, price) {
-    let modal = document.getElementById('details-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'details-modal';
-        modal.className = 'cart-overlay';
-        document.body.appendChild(modal);
-    }
-
-    modal.innerHTML = `
-        <div class="cart-container">
-            <button class="close-details" onclick="closeDetails()">✕</button>
-            <div class="details-img-wrapper">
-                <img src="${img}">
-            </div>
-            <h2 style="color:#CBA35C; font-size:18px; text-transform:uppercase;">${title}</h2>
-            <p style="color:#AAA; font-size:14px; line-height:1.6;">${desc}</p>
-            <div class="details-footer">
-                <span style="font-size:22px; color:#CBA35C; font-weight:700;">${price} ₴</span>
-                <button class="checkout-btn" style="width:auto; margin:0; padding:10px 20px;" onclick="closeDetails()">Закрити</button>
-            </div>
-        </div>
-    `;
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('active'), 10);
-}
-
-function closeDetails() {
-    const modal = document.getElementById('details-modal');
-    if(modal) {
-        modal.classList.remove('active');
-        setTimeout(() => modal.style.display = 'none', 300);
-    }
-}
-
-// 3. МОДАЛКА ПОДРОБНОСТЕЙ
+// 3. МОДАЛКА ПОДРОБНОСТЕЙ (Обновленная с кнопкой Додати)
 function openProductDetails(title, img, desc, price) {
     let detailsModal = document.getElementById('details-modal');
     if (!detailsModal) {
@@ -127,20 +89,38 @@ function openProductDetails(title, img, desc, price) {
     detailsModal.innerHTML = `
         <div class="cart-container details-container">
             <button class="close-details" onclick="closeDetails()">✕</button>
-            <div class="product-image-container" style="aspect-ratio: 1/1; margin-bottom: 20px;">
-                <img src="${img}" class="product-image" style="border-radius: 8px;">
+            <div class="details-img-wrapper">
+                <img src="${img}" class="product-image">
             </div>
             <h2 style="color:#CBA35C; text-transform: uppercase; letter-spacing: 2px; font-size: 20px;">${title}</h2>
             <p style="color:#888; line-height: 1.6; font-size: 14px; margin: 15px 0;">${desc}</p>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:30px; border-top: 1px solid #222; padding-top: 20px;">
                 <span style="font-size:24px; color:#CBA35C; font-weight:700;">${price} ₴</span>
-                <button class="checkout-btn" style="width:auto; padding: 12px 30px; margin:0;" onclick="closeDetails()">Закрити</button>
+                <button class="checkout-btn" style="width:auto; padding: 12px 30px; margin:0;" 
+                        onclick="addToCartFromDetails('${title}'); closeDetails();">
+                    Додати
+                </button>
             </div>
         </div>
     `;
 
     detailsModal.style.display = 'flex';
     setTimeout(() => detailsModal.classList.add('active'), 10);
+}
+
+// Функция-связка модалки с корзиной
+function addToCartFromDetails(title) {
+    document.querySelectorAll('.product-card').forEach(card => {
+        if (card.querySelector('.product-title').innerText.trim() === title) {
+            const buyBtn = card.querySelector('.buy-btn');
+            if (buyBtn && buyBtn.style.display !== 'none') {
+                showCounter(buyBtn);
+            } else {
+                const plusBtn = card.querySelector('.count-btn:last-child');
+                if (plusBtn) changeCount(plusBtn, 1);
+            }
+        }
+    });
 }
 
 function closeDetails() {
@@ -233,7 +213,7 @@ function renderCartItems() {
             const title = card.querySelector('.product-title').innerText.trim();
             const price = card.querySelector('.product-price').innerText;
             const count = card.querySelector('.count-value').innerText;
-            const img = card.querySelector('.product-image')?.src || ''; // Берем картинку из карточки
+            const img = card.querySelector('.product-image')?.src || '';
             hasItems = true;
 
             list.innerHTML += `
