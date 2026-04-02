@@ -1,18 +1,17 @@
 /* ФИНАЛЬНЫЙ СКРИПТ: KVIT.BLOOM 
-  Исправлено: Сетка, Фильтры, Корзина и защита от ошибок
+   Luxury Edition: Сетка, Фильтры, Корзина, Остатки и Подробности
 */
 
 let totalSum = 0;
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
 const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/613a3f51-2e98-4f32-81e5-ebadd7f583eb'; 
 
-// 1. ЗАГРУЗКА ДАННЫХ (Luxury Version)
+// 1. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
     const container = document.getElementById('products-container');
     if (!container) return;
     
     container.className = 'product-grid';
-    // Заменяем скелетон на стильную надпись LOADING в золотом цвете
     container.innerHTML = `
         <div style="grid-column: 1/-1; padding: 100px 20px; text-align: center; color: #CBA35C; text-transform: uppercase; letter-spacing: 5px; font-weight: 300; font-size: 14px;">
             <div class="skeleton" style="height: 2px; width: 50px; margin: 0 auto 20px;"></div>
@@ -28,7 +27,6 @@ async function loadStore() {
         if (window.allProducts.length > 0) {
             showFiltered(window.allProducts);
         } else {
-            // Если товаров нет — пишем это строго и без эмодзи
             container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:100px; color: #666; text-transform: uppercase; letter-spacing: 2px;">Колекція оновлюється</p>';
         }
     } catch (error) {
@@ -45,15 +43,21 @@ function showFiltered(items) {
     container.innerHTML = ''; 
 
     items.forEach(item => {
-        // Пропускаем пустые строки или неактивные товары
         if (!item['Название']) return;
         if (item['Статус'] && item['Статус'].trim() !== 'Active') return;
 
-        // Чистим данные
         const id = item['ID'] || `id-${Math.random().toString(36).substr(2, 9)}`;
         const title = String(item['Название']).trim();
         const price = parseInt(String(item['Цена']).replace(/\D/g, '')) || 0;
-        const img = item['Фото'] || ''; 
+        const img = item['Фото'] || '';
+        const desc = item['Описание'] || 'Преміальний букет зі свіжих квітів для ваших особливих подій.';
+        
+        // ЛОГИКА ОСТАТКОВ (Срочность)
+        const stock = parseInt(item['Количество']) || 0;
+        let stockMessage = '';
+        if (stock > 0 && stock <= 5) {
+            stockMessage = `<p class="stock-warning">Залишилося всього: ${stock} шт.</p>`;
+        }
 
         container.innerHTML += `
             <div class="product-card" data-id="${id}">
@@ -62,7 +66,11 @@ function showFiltered(items) {
                 </div>
                 <div class="product-info">
                     <h3 class="product-title">${title}</h3>
+                    ${stockMessage}
                     <p class="product-price">${price} ₴</p>
+                    
+                    <button class="details-btn" onclick="openProductDetails('${title.replace(/'/g, "\\'")}', '${img}', '${desc.replace(/'/g, "\\'").replace(/\n/g, " ")}', ${price})">Докладніше</button>
+                    
                     <button class="buy-btn" onclick="showCounter(this)">Додати</button>
                     <div class="counter-container" style="display: none;">
                         <button class="count-btn" onclick="changeCount(this, -1)">-</button>
@@ -74,7 +82,44 @@ function showFiltered(items) {
     });
 }
 
-// 3. ЛОГИКА СЧЕТЧИКОВ И КНОПОК
+// 3. МОДАЛКА ПОДРОБНОСТЕЙ
+function openProductDetails(title, img, desc, price) {
+    let detailsModal = document.getElementById('details-modal');
+    if (!detailsModal) {
+        detailsModal = document.createElement('div');
+        detailsModal.id = 'details-modal';
+        detailsModal.className = 'cart-overlay';
+        document.body.appendChild(detailsModal);
+    }
+
+    detailsModal.innerHTML = `
+        <div class="cart-container details-container">
+            <button class="close-details" onclick="closeDetails()">✕</button>
+            <div class="product-image-container" style="aspect-ratio: 1/1; margin-bottom: 20px;">
+                <img src="${img}" class="product-image" style="border-radius: 8px;">
+            </div>
+            <h2 style="color:#CBA35C; text-transform: uppercase; letter-spacing: 2px; font-size: 20px;">${title}</h2>
+            <p style="color:#888; line-height: 1.6; font-size: 14px; margin: 15px 0;">${desc}</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:30px; border-top: 1px solid #222; padding-top: 20px;">
+                <span style="font-size:24px; color:#CBA35C; font-weight:700;">${price} ₴</span>
+                <button class="checkout-btn" style="width:auto; padding: 12px 30px; margin:0;" onclick="closeDetails()">Закрити</button>
+            </div>
+        </div>
+    `;
+
+    detailsModal.style.display = 'flex';
+    setTimeout(() => detailsModal.classList.add('active'), 10);
+}
+
+function closeDetails() {
+    const modal = document.getElementById('details-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+}
+
+// 4. ЛОГИКА СЧЕТЧИКОВ
 function showCounter(btn) {
     const card = btn.closest('.product-card');
     const counter = card.querySelector('.counter-container');
@@ -100,15 +145,11 @@ function changeCount(btn, delta) {
     }
 
     updateTotal();
-    
-    // Если корзина открыта — обновляем список в ней на лету
     const modal = document.getElementById('cart-modal');
-    if (modal && modal.classList.contains('active')) {
-        renderCartItems();
-    }
+    if (modal && modal.classList.contains('active')) renderCartItems();
 }
 
-// 4. ОБНОВЛЕНИЕ ИТОГОВ
+// 5. ОБНОВЛЕНИЕ ИТОГОВ
 function updateTotal() {
     const fab = document.getElementById('cart-fab');
     const fabCount = document.getElementById('fab-count');
@@ -120,7 +161,8 @@ function updateTotal() {
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
-            const price = parseInt(card.querySelector('.product-price').innerText.replace(/\D/g, '')) || 0;
+            const priceText = card.querySelector('.product-price').innerText;
+            const price = parseInt(priceText.replace(/\D/g, '')) || 0;
             const count = parseInt(card.querySelector('.count-value').innerText) || 0;
             tempTotal += (price * count);
             totalItemsCount += count;
@@ -128,25 +170,20 @@ function updateTotal() {
     });
 
     totalSum = tempTotal;
-
     if (fab) {
         fab.style.display = totalItemsCount > 0 ? 'flex' : 'none';
         if (fabCount) fabCount.innerText = totalItemsCount;
     }
-    
     if (totalContainer) totalContainer.innerText = `${totalSum} ₴`;
 }
 
-// 5. КОРЗИНА И МОДАЛКА
+// 6. КОРЗИНА
 function openCart() {
     const modal = document.getElementById('cart-modal');
     if (!modal) return;
-
     document.getElementById('cart-stage-1').style.display = 'block';
     document.getElementById('cart-stage-2').style.display = 'none';
-    
     renderCartItems();
-
     modal.style.display = 'flex';
     setTimeout(() => modal.classList.add('active'), 10);
 }
@@ -154,7 +191,6 @@ function openCart() {
 function renderCartItems() {
     const list = document.getElementById('cart-items-list');
     if (!list) return;
-
     list.innerHTML = ''; 
     let hasItems = false;
 
@@ -166,15 +202,13 @@ function renderCartItems() {
             const price = card.querySelector('.product-price').innerText;
             const count = card.querySelector('.count-value').innerText;
             hasItems = true;
-
             list.innerHTML += `
                 <div class="cart-item">
                     <div><b>${title}</b><br><small>${count} шт. x ${price}</small></div>
-                    <button onclick="deleteProductById('${id}')" style="color:#ff4d4d; background:none; border:none; cursor:pointer; font-size:1.5em; padding:5px;">✕</button>
+                    <button onclick="deleteProductById('${id}')" style="color:#CBA35C; background:none; border:none; cursor:pointer; font-size:1.5em;">✕</button>
                 </div>`;
         }
     });
-
     if (!hasItems) closeCart();
 }
 
@@ -197,16 +231,11 @@ function closeCart() {
     }
 }
 
-// 6. ОФОРМЛЕНИЕ ЗАКАЗА
+// 7. ЗАКАЗ
 function goToCheckout() {
     if (totalSum <= 0) return;
     document.getElementById('cart-stage-1').style.display = 'none';
     document.getElementById('cart-stage-2').style.display = 'block';
-}
-
-function backToCart() {
-    document.getElementById('cart-stage-1').style.display = 'block';
-    document.getElementById('cart-stage-2').style.display = 'none';
 }
 
 async function finalCheckout() {
@@ -236,7 +265,6 @@ async function finalCheckout() {
 
     message += `\n💰 *Разом: ${totalSum} ₴*`;
     
-    // Отправляем в n8n (не ждем ответа, чтобы быстрее перекинуть в ТГ)
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -246,16 +274,13 @@ async function finalCheckout() {
     window.location.href = `https://t.me/tinellton?text=${encodeURIComponent(message)}`;
 }
 
-// 7. ФИЛЬТРАЦИЯ (С ИСПРАВЛЕНИЕМ ДЛЯ "ВСЕ")
+// 8. ФИЛЬТРЫ
 function filterProducts(category, btn) {
     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-
     const titleEl = document.getElementById('current-category-title');
     if (titleEl) titleEl.innerText = category === 'Все' ? 'Всі товари' : category;
-
     if (!window.allProducts) return;
-
     if (category === 'Все') {
         showFiltered(window.allProducts);
     } else {
@@ -266,11 +291,11 @@ function filterProducts(category, btn) {
     }
 }
 
-// Закрытие модалки по клику на фон
 window.onclick = (event) => {
-    const modal = document.getElementById('cart-modal');
-    if (event.target === modal) closeCart();
+    if (event.target.id === 'cart-modal' || event.target.id === 'details-modal') {
+        closeCart();
+        closeDetails();
+    }
 };
 
-// Запуск при загрузке
 window.onload = loadStore;

@@ -394,3 +394,41 @@ header {
     to { opacity: 1; transform: translateY(0); }
 }
 .product-card { animation: fadeInUp 0.4s ease forwards; }
+
+
+/* Докладніше */
+
+.details-btn {
+    width: 100%;
+    background: transparent;
+    color: #888;
+    border: 1px solid #222;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.details-btn:hover {
+    border-color: #CBA35C;
+    color: #CBA35C;
+}
+
+/* Стили для закрытия подробностей */
+.close-details {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #111;
+    color: #CBA35C;
+    border: 1px solid #333;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 100;
+}
