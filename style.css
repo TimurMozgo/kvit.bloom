@@ -178,6 +178,26 @@ header {
     border-top: 1px solid #222;
 }
 
+.checkout-btn {
+    width: auto; /* Не на всю ширину */
+    padding: 12px 30px; /* Аккуратные отступы */
+    margin: 0;
+    background-color: transparent; /* Прозрачный фон */
+    color: #CBA35C; /* Золотой текст */
+    border: 2px solid #CBA35C; /* Золотая рамка */
+    border-radius: 4px; /* Строгие углы */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.checkout-btn:hover {
+    background-color: #CBA35C; color: #000;
+}
+
 /* --- ДЕКСTOP ВЕРСИЯ (Экран шире 768px) --- */
 @media (min-width: 768px) {
     .cart-overlay {
