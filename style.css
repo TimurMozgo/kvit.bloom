@@ -116,7 +116,11 @@ header {
 }
 
 @media (min-width: 1024px) {
-    .product-grid { grid-template-columns: repeat(4, 1fr); gap: 35px; }
+    .product-grid {
+        max-width: 1200px; /* Даем больше пространства на компе */
+        grid-template-columns: repeat(3, 1fr); /* 3 в ряд, чтобы было солидно */
+        gap: 40px;
+    }
 }
 
 /* --- 4. КАРТОЧКА ТОВАРА (Luxury Design) --- */
@@ -146,21 +150,20 @@ header {
 
 .product-image-container {
     width: 100%;
-    aspect-ratio: 1 / 1;
-    background-color: #111;
+    aspect-ratio: 1 / 1; /* Квадрат — это золотой стандарт люкса */
+    background-color: #0a0a0a;
     border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #222;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    margin-bottom: 15px;
-    border: 1px solid #222;
 }
 
 .product-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* Картинка заполняет квадрат без дырок */
     transition: transform 0.5s ease;
 }
 
