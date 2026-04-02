@@ -102,13 +102,12 @@ header {
     text-align: center;
 }
 
-/* --- 3. СЕТКА ТОВАРОВ (Стабильная) --- */
 .product-grid { 
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 в ряд на мобилках */
-    gap: 15px; 
-    padding: 15px;
-    max-width: 1400px;
+    grid-template-columns: 1fr; /* Твердо одна колонка */
+    gap: 25px; /* Увеличили отступ, чтобы каждый товар "дышал" */
+    padding: 20px;
+    max-width: 600px; /* Ограничиваем ширину, чтобы на компах не растягивало на весь экран */
     margin: 0 auto;
 }
 
@@ -274,8 +273,12 @@ header {
 
 .cart-fab:hover { transform: scale(1.05); box-shadow: 0 15px 40px rgba(203, 163, 92, 0.5); }
 
-/* Убрали эмодзи, сделали стильную сумку */
-.cart-fab::after { content: 'BAG'; font-size: 14px; font-weight: 900; letter-spacing: 1px; }
+
+.cart-fab::after { 
+    content: '🛒'; /* Можно оставить эмодзи или заменить на SVG, если умеешь */
+    font-size: 28px;
+    filter: sepia(1) saturate(5) hue-rotate(10deg); /* Накладываем золотистый фильтр на эмодзи */
+}
 
 #fab-count {
     position: absolute;
