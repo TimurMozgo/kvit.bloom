@@ -104,15 +104,21 @@ header {
 
 .product-grid { 
     display: grid;
-    grid-template-columns: 1fr; /* Твердо одна колонка */
-    gap: 25px; /* Увеличили отступ, чтобы каждый товар "дышал" */
+
+    grid-template-columns: 1fr; 
+    gap: 25px; 
     padding: 20px;
-    max-width: 600px; /* Ограничиваем ширину, чтобы на компах не растягивало на весь экран */
+
+    max-width: 1200px; 
     margin: 0 auto;
 }
 
 @media (min-width: 768px) {
-    .product-grid { grid-template-columns: repeat(3, 1fr); gap: 25px; }
+    .product-grid {
+        /* На планшетах и компах делаем 3 или 4 колонки */
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+        gap: 40px; /* Больше пространства между товарами на десктопе */
+    }
 }
 
 @media (min-width: 1024px) {
