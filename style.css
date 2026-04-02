@@ -99,6 +99,7 @@ header {
 .count-btn { width: 36px; height: 36px; border: none; background-color: #222; color: #CBA35C; font-weight: bold; cursor: pointer; }
 
 /* --- МОДАЛЬНОЕ ОКНО И КОРЗИНА (Адаптив: Мобилка + Десктоп) --- */
+/* РАБОЧАЯ БАЗА: МОБИЛКА ПРЕЖДЕ ВСЕГО */
 .cart-overlay {
     display: none; 
     position: fixed; 
@@ -108,7 +109,7 @@ header {
     -webkit-backdrop-filter: blur(8px);
     z-index: 2000; 
     
-    /* По умолчанию для мобилок: прижимаем к низу */
+    /* Прижимаем к низу для удобства больших пальцев */
     align-items: flex-end; 
     justify-content: center;
 }
@@ -197,31 +198,44 @@ header {
 }
 
 /* --- ДЕКСTOP ВЕРСИЯ (Экран шире 768px) --- */
+/* --- ДЕКСTOP ВЕРСИЯ (Экран шире 768px) --- */
 @media (min-width: 768px) {
     .cart-overlay {
-        align-items: center;
+        align-items: center; /* Центрируем окно по середине экрана */
         padding: 20px;
-    }
-
-    .cart-container {
-        max-width: 500px; 
-        border-radius: 15px; 
-        border-bottom: 1px solid #CBA35C; 
-        transform: translateY(0) scale(0.9); /* Сбрасываем выезд снизу и ставим масштаб */
-        opacity: 0;
+        display: none; /* Скрыто по умолчанию */
+        justify-content: center; /* Также центрируем по горизонтали */
     }
 
     /* При активации на десктопе */
+    .cart-overlay.active { 
+        display: flex !important; 
+    }
+
+    .cart-container {
+        max-width: 500px; /* Чтобы на весь монитор не растягивалось */
+        width: 100%; /* Занимает всю ширину внутри max-width */
+        border-radius: 15px; /* Скругление со всех сторон */
+        border-bottom: 1px solid #CBA35C; /* Возвращаем нижнюю рамку */
+        
+        /* Сбрасываем выезд снизу и делаем появление через масштаб */
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.3s ease;
+        margin: 0 auto; /* ДОБАВИЛ, чтобы блок был точно по центру */
+    }
+
     .cart-overlay.active .cart-container {
-        transform: translateY(0) scale(1) !important;
-        opacity: 1 !important;
+        transform: scale(1);
+        opacity: 1;
     }
 
-
+    /* ФИКС: Ограничиваем высоту картинки в "Подробнее" на десктопе */
     .details-img-wrapper {
-        max-height: 380px; /* Чтобы на больших экранах картинка не была гигантской */
+        max-height: 350px; /* Чтобы котейка не был гигантским */
+        overflow: hidden;
+        border-radius: 8px;
     }
-
 }
 
 /* --- КОРЗИНА FAB --- */
