@@ -98,7 +98,6 @@ header {
 .counter-container { display: flex; align-items: center; justify-content: space-between; background-color: #111; border: 1px solid #333; height: 45px; padding: 0 4px; }
 .count-btn { width: 36px; height: 36px; border: none; background-color: #222; color: #CBA35C; font-weight: bold; cursor: pointer; }
 
-/* --- КОРЗИНА И МОДАЛКИ (ФИКС РАЗМЕРОВ КАРТИНКИ) --- */
 /* --- МОДАЛЬНОЕ ОКНО И КОРЗИНА (Адаптив: Мобилка + Десктоп) --- */
 .cart-overlay {
     display: none; 
