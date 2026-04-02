@@ -37,6 +37,7 @@ function showFiltered(items) {
     items.forEach(item => {
         if (!item['Название'] || (item['Статус'] && item['Статус'].trim() !== 'Active')) return;
 
+        // Берем ID из данных или генерим временный
         const id = item['ID'] || `id-${Math.random().toString(36).substr(2, 9)}`;
         const title = String(item['Название']).trim();
         const price = parseInt(String(item['Цена']).replace(/\D/g, '')) || 0;
@@ -54,7 +55,9 @@ function showFiltered(items) {
                 <div class="product-info">
                     <h3 class="product-title">${title}</h3>
                     <p class="product-price">${price} ₴</p>
-                    <button class="details-btn" onclick="openProductDetails('${cleanTitle}', '${img}', '${cleanDesc}', ${price})">Докладніше</button>
+                    
+                    <button class="details-btn" onclick="openProductDetails('${id}', '${cleanTitle}', '${img}', '${cleanDesc}', ${price})">Докладніше</button>
+                    
                     <button class="buy-btn" onclick="showCounter(this)">Додати</button>
                     <div class="counter-container" style="display: none;">
                         <button class="count-btn" onclick="changeCount(this, -1)">-</button>
