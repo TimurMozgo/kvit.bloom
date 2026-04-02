@@ -233,11 +233,19 @@ function renderCartItems() {
             const title = card.querySelector('.product-title').innerText.trim();
             const price = card.querySelector('.product-price').innerText;
             const count = card.querySelector('.count-value').innerText;
+            const img = card.querySelector('.product-image')?.src || ''; // Берем картинку из карточки
             hasItems = true;
+
             list.innerHTML += `
-                <div class="cart-item">
-                    <div><b>${title}</b><br><small>${count} шт. x ${price}</small></div>
-                    <button onclick="deleteProductById('${id}')" style="color:#CBA35C; background:none; border:none; cursor:pointer; font-size:1.5em;">✕</button>
+                <div class="cart-item-row">
+                    <div class="cart-item-info">
+                        <img src="${img}" class="cart-item-mini-img" onerror="this.src='🌸'">
+                        <div class="cart-item-text">
+                            <span class="cart-item-title">${title}</span>
+                            <span class="cart-item-details">${count} шт. x ${price}</span>
+                        </div>
+                    </div>
+                    <button class="remove-item-btn" onclick="deleteProductById('${id}')">✕</button>
                 </div>`;
         }
     });

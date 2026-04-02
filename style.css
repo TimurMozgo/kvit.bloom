@@ -236,3 +236,76 @@ header {
 
 /* Остальное (формы, инпуты и т.д.) */
 .order-form input { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 15px; margin-bottom: 10px; box-sizing: border-box; }
+
+/* Строка товара в корзине */
+.cart-item-row {
+    display: flex;
+    justify-content: space-between; /* Текст влево, крестик вправо */
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #222;
+    gap: 15px;
+}
+
+/* Блок фото + текст */
+.cart-item-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1; /* Занимает всё свободное место */
+}
+
+/* Мини-картинка в корзине */
+.cart-item-mini-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid #333;
+    background: #0a0a0a;
+}
+
+/* Текстовый блок */
+.cart-item-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cart-item-title {
+    color: #F0F0F0;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cart-item-details {
+    color: #888;
+    font-size: 12px;
+}
+
+/* Кнопка удаления (Крестик) */
+.remove-item-btn {
+    background: transparent;
+    border: none;
+    color: #555;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    transition: 0.3s;
+    line-height: 1;
+}
+
+.remove-item-btn:hover {
+    color: #CBA35C;
+    transform: scale(1.2);
+}
+
+/* Центрируем "Всі товари" и заголовки */
+.section-title, #current-category-title {
+    text-align: center !important;
+    width: 100%;
+    display: block;
+    margin: 20px auto;
+}
