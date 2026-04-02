@@ -1,5 +1,5 @@
 /* ФИНАЛЬНЫЙ СКРИПТ: KVIT.BLOOM 
-   Luxury Edition: Сетка, Фильтры, Корзина, Остатки и Подробности
+    Luxury Edition: Сетка, Фильтры, Корзина, Остатки и Подробности
 */
 
 let totalSum = 0;
@@ -37,7 +37,6 @@ function showFiltered(items) {
     items.forEach(item => {
         if (!item['Название'] || (item['Статус'] && item['Статус'].trim() !== 'Active')) return;
 
-        // Берем ID из данных или генерим временный
         const id = item['ID'] || `id-${Math.random().toString(36).substr(2, 9)}`;
         const title = String(item['Название']).trim();
         const price = parseInt(String(item['Цена']).replace(/\D/g, '')) || 0;
@@ -70,7 +69,7 @@ function showFiltered(items) {
 }
 
 // 3. МОДАЛКА ПОДРОБНОСТЕЙ
-function openProductDetails(title, img, desc, price) {
+function openProductDetails(id, title, img, desc, price) {
     let detailsModal = document.getElementById('details-modal');
     if (!detailsModal) {
         detailsModal = document.createElement('div');
@@ -87,25 +86,26 @@ function openProductDetails(title, img, desc, price) {
             <p style="color:#888; font-size: 14px; margin: 15px 0;">${desc}</p>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; border-top: 1px solid #222; padding-top: 20px;">
                 <span style="font-size:24px; color:#CBA35C; font-weight:700;">${price} ₴</span>
-                <button class="checkout-btn" style="width:auto; padding: 12px 30px; margin:0;" onclick="addToCartFromDetails('${title}'); closeDetails();">Додати</button>
+                <button class="checkout-btn" style="width:auto; padding: 12px 30px; margin:0;" onclick="addToCartFromDetails('${id}');">Додати</button>
             </div>
         </div>`;
     detailsModal.style.display = 'flex';
     setTimeout(() => detailsModal.classList.add('active'), 10);
 }
 
-function addToCartFromDetails(title) {
-    document.querySelectorAll('.product-card').forEach(card => {
-        if (card.querySelector('.product-title').innerText.trim() === title) {
-            const buyBtn = card.querySelector('.buy-btn');
-            if (buyBtn && buyBtn.style.display !== 'none') {
-                showCounter(buyBtn);
-            } else {
-                const plusBtn = card.querySelector('.count-btn:last-child');
-                if (plusBtn) changeCount(plusBtn, 1);
-            }
+function addToCartFromDetails(id) {
+    // Находим карточку по ID
+    const card = document.querySelector(`.product-card[data-id="${id}"]`);
+    if (card) {
+        const buyBtn = card.querySelector('.buy-btn');
+        if (buyBtn && buyBtn.style.display !== 'none') {
+            showCounter(buyBtn);
+        } else {
+            const plusBtn = card.querySelector('.count-btn:last-child');
+            if (plusBtn) changeCount(plusBtn, 1);
         }
-    });
+        closeDetails(); // Закрываем модалку после успешного добавления
+    }
 }
 
 function closeDetails() {
@@ -193,7 +193,6 @@ function goToCheckout() {
     document.getElementById('cart-stage-2').style.display = 'block';
 }
 
-// ФУНКЦИЯ ДЛЯ КНОПКИ НАЗАД (СОВПАДАЕТ С HTML)
 function backToCart() {
     document.getElementById('cart-stage-2').style.display = 'none';
     document.getElementById('cart-stage-1').style.display = 'block';
@@ -241,7 +240,7 @@ function deleteProductById(id) {
     renderCartItems();
 }
 
-// 7. ФИНАЛЬНЫЙ ЗАКАЗ (БЕЗ АДРЕСА)
+// 7. ФИНАЛЬНЫЙ ЗАКАЗ
 async function finalCheckout() {
     const name = document.getElementById('customer-name').value.trim();
     const phone = document.getElementById('customer-phone').value.trim();
