@@ -36,6 +36,7 @@ async function loadStore() {
 }
 
 // 2. ОТРИСОВКА КАРТОЧЕК
+
 function showFiltered(items) {
     const container = document.getElementById('products-container');
     if (!container) return;
@@ -46,30 +47,45 @@ function showFiltered(items) {
         if (!item['Название']) return;
         if (item['Статус'] && item['Статус'].trim() !== 'Active') return;
 
+        // 1. ЧИСТИМ ДАННЫЕ (Чтобы кнопки не ломались)
         const id = item['ID'] || `id-${Math.random().toString(36).substr(2, 9)}`;
         const title = String(item['Название']).trim();
         const price = parseInt(String(item['Цена']).replace(/\D/g, '')) || 0;
         const img = item['Фото'] || '';
-        const desc = item['Описание'] || 'Преміальний букет зі свіжих квітів для ваших особливих подій.';
         
-        // ЛОГИКА ОСТАТКОВ (Срочность)
+        // Описание: убираем все виды кавычек и переносов, чтобы JS не спотыкался
+        const rawDesc = item['Описание'] || 'Преміальний букет зі свіжих квітів для ваших особливих подій.';
+        const cleanDesc = rawDesc
+            .replace(/'/g, "’")    // Заменяем одинарную кавычку на апостроф
+            .replace(/"/g, "“")    // Заменяем двойную кавычку
+            .replace(/\r?\n|\r/g, " "); // Убираем переносы строк (из-за них часто не работает)
+
+        const cleanTitle = title.replace(/'/g, "’").replace(/"/g, "“");
+
+        // 2. ЛОГИКА ОСТАТКОВ
         const stock = parseInt(item['Количество']) || 0;
         let stockMessage = '';
         if (stock > 0 && stock <= 5) {
             stockMessage = `<p class="stock-warning">Залишилося всього: ${stock} шт.</p>`;
         }
 
+        // 3. СТРУКТУРА КАРТОЧКИ (С правильными размерами)
         container.innerHTML += `
             <div class="product-card" data-id="${id}">
-                <div class="product-image-container">
-                    ${img ? `<img src="${img}" class="product-image" alt="${title}" onerror="this.parentElement.innerHTML='🌸';">` : '🌸'}
+                <div class="product-image-container" style="aspect-ratio: 1/1; overflow: hidden; background: #0a0a0a;">
+                    ${img ? `<img src="${img}" class="product-image" alt="${cleanTitle}" 
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.parentElement.innerHTML='🌸';">` : '🌸'}
                 </div>
                 <div class="product-info">
-                    <h3 class="product-title">${title}</h3>
+                    <h3 class="product-title">${cleanTitle}</h3>
                     ${stockMessage}
                     <p class="product-price">${price} ₴</p>
                     
-                    <button class="details-btn" onclick="openProductDetails('${title.replace(/'/g, "\\'")}', '${img}', '${desc.replace(/'/g, "\\'").replace(/\n/g, " ")}', ${price})">Докладніше</button>
+                    <button class="details-btn" 
+                        onclick="openProductDetails('${cleanTitle}', '${img}', '${cleanDesc}', ${price})">
+                        Докладніше
+                    </button>
                     
                     <button class="buy-btn" onclick="showCounter(this)">Додати</button>
                     <div class="counter-container" style="display: none;">
