@@ -396,10 +396,12 @@ header {
 
 
 .success-p {
-    color: #ffffff; 
+    color: #ffffff !important; 
     font-size: 15px; 
     line-height: 1.6; 
-    margin-bottom: 25px; 
+    margin-bottom: 25px;
+    opacity: 1 !important; /* Гарантируем, что текст не прозрачный */
+    background: none !important; /* Убираем любой возможный фон самого текста */
 }
 
 /* Элитная Кнопка успеха */
@@ -428,18 +430,25 @@ header {
 
 @media screen and (max-width: 480px) {
     .success-card {
-        /* На мобилке карточка адаптируется под экран */
-        width: calc(100% - 40px); 
+        width: calc(100% - 40px); /* Отступы по бокам по 20px */
         margin: 20px;
         padding: 35px 20px;
         border-radius: 25px;
     }
 
     .success-header {
-        font-size: 18px;
+        font-size: 17px; /* Уменьшаем, чтобы влезло в одну строку на iPhone SE/13 */
+        letter-spacing: 1px; /* Чуть сужаем межбуквенное расстояние */
     }
 
     .success-p {
+        font-size: 14px; /* Чтобы описание не выглядело тяжелым */
+        line-height: 1.5;
+        margin-bottom: 25px;
+    }
+
+    .success-close-btn {
+        padding: 14px;
         font-size: 15px;
     }
 }
