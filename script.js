@@ -1,6 +1,9 @@
-/* ФИНАЛЬНЫЙ СКРИПТ: KVIT.BLOOM 
-    Luxury Edition: Сетка, Фильтры, Корзина, Остатки и Подробности
-*/
+// Инициализация Telegram
+const tg = window.Telegram?.WebApp;
+if (tg) {
+    tg.ready();
+    tg.expand();
+}
 
 let totalSum = 0;
 
@@ -11,7 +14,7 @@ const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69f
 const N8N_REDUCE_STOCK_URL_OLD = 'https://tiktiok.xyz/webhook/613a3f51-2e98-4f32-81e5-ebadd7f583eb';
 
 // 3. Твой НОВЫЙ ключ для заказов цветов (добавили FLOWERS в название)
-const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook-test/88111e6c-d8b9-4fc4-8d69-b0a712f5410f';
+const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/88111e6c-d8b9-4fc4-8d69-b0a712f5410f';
 
 // 1. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
