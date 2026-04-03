@@ -11,7 +11,7 @@ let totalSum = 0;
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
 
 // 2. Твой старый ключ (переименовали в OLD, чтобы не мешал)
-const N8N_REDUCE_STOCK_URL_OLD = 'https://tiktiok.xyz/webhook/613a3f51-2e98-4f32-81e5-ebadd7f583eb';
+const N8N_REDUCE_STOCK_URL_OLD = 'https://tiktiok.xyz/webhook-test/613a3f51-2e98-4f32-81e5-ebadd7f583eb';
 
 // 3. Твой НОВЫЙ ключ для заказов цветов (добавили FLOWERS в название)
 const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/88111e6c-d8b9-4fc4-8d69-b0a712f5410f';
