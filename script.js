@@ -241,6 +241,8 @@ function deleteProductById(id) {
 }
 
 // 7. ФИНАЛЬНЫЙ ЗАКАЗ
+
+// 7. ФИНАЛЬНЫЙ ЗАКАЗ (С АНИМАЦИЕЙ УСПЕХА)
 async function finalCheckout() {
     const name = document.getElementById('customer-name').value.trim();
     const phone = document.getElementById('customer-phone').value.trim();
@@ -250,7 +252,6 @@ async function finalCheckout() {
         return;
     }
 
-    // Собираем данные для n8n
     let cartItems = [];
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
@@ -261,7 +262,7 @@ async function finalCheckout() {
         }
     });
 
-    // 1. Отправляем Аудитору (n8n сделает всё остальное: спишет остатки, пришлет тебе уведомление)
+    // 1. Отправляем Аудитору (n8n)
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -273,7 +274,6 @@ async function finalCheckout() {
 }
 
 function showSuccessOrder() {
-    // Создаем элемент, если его нет
     let overlay = document.getElementById('success-overlay');
     if (!overlay) {
         overlay = document.createElement('div');
@@ -282,23 +282,28 @@ function showSuccessOrder() {
         document.body.appendChild(overlay);
     }
 
-    // Шикарный текст для Luxury Boutique
     overlay.innerHTML = `
         <div class="success-card">
-            <span class="success-icon">✨</span>
-            <h2 style="color: #CBA35C; margin-bottom: 10px; text-transform: uppercase;">Дякуємо за вибір!</h2>
-            <p style="color: #333; font-size: 16px; line-height: 1.5;">
-                Ваше замовлення прийнято. <br>
-                Флорист вже почав створювати ваш ідеальний букет. <br>
+            <div style="font-size: 60px; margin-bottom: 15px;">✨</div>
+            <h2 style="color: #CBA35C; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Дякуємо за вибір!</h2>
+            <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                Ваше замовлення прийнято.<br>
+                Флорист вже почав створювати ваш ідеальний букет. 🌸<br>
                 Ми зателефонуємо вам протягом 5 хвилин для підтвердження.
             </p>
-            <button onclick="location.reload()" class="checkout-btn" style="margin-top: 25px;">Зрозуміло</button>
+            <button onclick="location.reload()" class="checkout-btn" 
+                style="margin: 0; width: 100%; background: #CBA35C; color: #fff; border: none; padding: 15px; border-radius: 12px; font-weight: 600; cursor: pointer;">
+                Зрозуміло
+            </button>
         </div>
     `;
 
-    // Закрываем корзину и показываем анимацию
-    closeCart();
-    overlay.classList.add('active');
+    closeCart(); // Закрываем корзину перед показом успеха
+
+    // Запускаем плавную анимацию через микро-задержку
+    setTimeout(() => {
+        overlay.classList.add('active');
+    }, 50);
 }
 
 // 8. ФИЛЬТРЫ И ИНИЦИАЛИЗАЦИЯ
