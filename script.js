@@ -282,22 +282,22 @@ function showSuccessOrder() {
         document.body.appendChild(overlay);
     }
 
-    overlay.innerHTML = `
-        <div class="success-card">
-            <div style="font-size: 60px; margin-bottom: 15px;">✨</div>
-            <h2 style="color: #CBA35C; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Дякуємо за вибір!</h2>
-            <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-                Ваше замовлення прийнято.<br>
-                Флорист вже почав створювати ваш ідеальний букет. 🌸<br>
-                Ми зателефонуємо вам протягом 5 хвилин для підтвердження.
-            </p>
-            <button onclick="location.reload()" class="checkout-btn" 
-                style="margin: 0; width: 100%; background: #CBA35C; color: #fff; border: none; padding: 15px; border-radius: 12px; font-weight: 600; cursor: pointer;">
-                Зрозуміло
-            </button>
-        </div>
+   overlay.innerHTML = `
+    <div class="success-card">
+        <div style="font-size: 60px; margin-bottom: 15px;">✨</div>
+        <h2 class="success-header">Дякуємо за вибір!</h2>
+        
+        <p class="success-p">
+            Ваше замовлення прийнято.<br>
+            Флорист вже почав створювати ваш ідеальний букет. 🌸<br>
+            Ми зателефонуємо вам протягом 5 хвилин для підтвердження.
+        </p>
+        
+        <button onclick="location.reload()" class="success-close-btn">
+            Зрозуміло
+        </button>
+    </div>
     `;
-
     closeCart(); // Закрываем корзину перед показом успеха
 
     // Запускаем плавную анимацию через микро-задержку

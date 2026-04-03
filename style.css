@@ -396,9 +396,9 @@ header {
 
 
 .success-p {
-    color: #ffffff; /* Светлый, мягкий серый */
+    color: #ffffff; 
     font-size: 15px; 
-    line-height: 1.6; /* Увеличили межстрочный интервал */
+    line-height: 1.6; 
     margin-bottom: 25px; 
 }
 
