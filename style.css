@@ -322,15 +322,14 @@ header {
     margin: 20px auto;
 }
 
-/* Анимация успеха */
-/* Плавная анимация окна успеха */
-/* ЭЛИТНАЯ АНИМАЦИЯ ОКНА УСПЕХА: Luxury Transparent Edition */
+
+/* ЭЛИТНАЯ АНИМАЦИЯ ОКНА УСПЕХА: Dark Luxury Transparent Edition */
 .success-overlay {
     position: fixed;
     top: 0; left: 0; 
     width: 100%; height: 100%;
     
-    /* ИЗМЕНЕНИЕ 1: Сделали фон прозрачным (полупрозрачным черным) */
+    /* ИЗМЕНЕНИЕ 1: Сделали фон ПРОЗРАЧНЫМ, но заблюренным (темный дым) */
     background: rgba(0, 0, 0, 0); 
     
     display: flex; 
@@ -338,42 +337,44 @@ header {
     justify-content: center;
     z-index: 10000; /* Очень высокий приоритет, чтобы был поверх всего */
     
-    /* ИЗМЕНЕНИЕ 2: Добавили плавный БЛЮР на фон */
+    /* ИЗМЕНЕНИЕ 2: Добавили сильный плавный БЛЮР на весь фон */
     backdrop-filter: blur(0px); 
-    transition: all 0.5s ease; 
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 0;
     pointer-events: none; /* Пока скрыт, не мешает кликам */
 }
 
-/* Сама карточка сообщения (с прозрачностью) */
+/* Сама карточка сообщения (Темное Стекло) */
 .success-card {
-    /* ИЗМЕНЕНИЕ 3: Карточка теперь тоже полупрозрачная (дымчатая) */
-    background: rgba(255, 255, 255, 0.65); /* Слегка тонированное стекло */
+    /* ИЗМЕНЕНИЕ 3: Сама карточка теперь ТЕМНАЯ (Дымчатое Темное Стекло) */
+    background: rgba(15, 15, 15, 0.85); /* Глубокий темный */
     
-    /* ИЗМЕНЕНИЕ 4: Мощный БЛЮР ТОЛЬКО ВНУТРИ карточки (Glassmorphism) */
-    backdrop-filter: blur(20px); 
+    /* ИЗМЕНЕНИЕ 4: Мощный БЛЮР ТОЛЬКО ВНУТРИ карточки (Dark Glassmorphism) */
+    backdrop-filter: blur(25px); 
+    -webkit-backdrop-filter: blur(25px); /* Для поддержки Safari/iPhone */
     
     padding: 35px 25px; /* Увеличили верхний padding, сузили боковые */
     border-radius: 28px; /* Сильнее округлили углы */
     text-align: center;
     transform: scale(0.9) translateY(40px); /* Эффект появления снизу */
-    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2); /* Красивая "пружинка" */
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Пружинистый эффект Bounce */
     
+    /* ВОТ ЭТИ СТРОКИ ДЕЛАЮТ ЕГО АКУРАТНЫМ НА МОБИЛКЕ */
     width: auto; /* Ширина по контенту */
     margin: 20px; /* Обязательный отступ от боков экрана на мобилке */
     max-width: 320px; /* Но не шире 320px на больших телефонах */
     
-    /* Улучшенная тень */
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    /* Глубокая темная тень для объема */
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6);
     
-    /* Тонкая белая рамка для элитности */
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    /* ИЗМЕНЕНИЕ 5: Тонкая ЗОЛОТАЯ рамка для элитности */
+    border: 1px solid rgba(203, 163, 92, 0.3);
 }
 
 /* Состояние при активации */
 .success-overlay.active {
-    background: rgba(0, 0, 0, 0.7); /* Фон темнеет */
-    backdrop-filter: blur(5px); /* Весь сайт слегка размывается */
+    background: rgba(0, 0, 0, 0.75); /* Фон темнеет сильнее */
+    backdrop-filter: blur(10px); /* Весь сайт заблюривается */
     opacity: 1;
     pointer-events: auto; /* Включаем клики */
 }
@@ -382,44 +383,48 @@ header {
     transform: scale(1) translateY(0);
 }
 
-/* Стиль для элитного текста внутри модалки (золото) */
+/* ИЗМЕНЕНИЕ 6: Цвет ЗАГОЛОВКА теперь ЗОЛОТОЙ (на темном фоне горит) */
 .success-header {
     color: #CBA35C; 
     margin-bottom: 12px; 
     text-transform: uppercase; 
     letter-spacing: 2px; /* Увеличили расстояние между буквами */
-    font-size: 18px; 
-    font-weight: 700;
+    font-size: 19px; 
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
 
-/* Текст теперь белый для контраста на дымчатом фоне */
+/* ИЗМЕНЕНИЕ 7: Цвет ТЕКСТА теперь СВЕТЛО-СЕРЫЙ/БЕЛЫЙ для контраста */
 .success-p {
-    color: #444; /* Сделали текст чуть темнее для лучшей читаемости */
+    color: #ddd; /* Светлый, мягкий серый */
     font-size: 15px; 
     line-height: 1.6; /* Увеличили межстрочный интервал */
     margin-bottom: 25px; 
+    opacity: 0.9;
 }
 
 /* Элитная Кнопка успеха */
 .success-close-btn {
     margin: 0; 
     width: 100%; /* На всю ширину карточки */
-    background: #CBA35C; 
-    color: #fff; 
+    background: #CBA35C; /* Кнопка золотая */
+    color: #fff; /* Текст на кнопке белый */
     border: none; 
     padding: 16px; 
     border-radius: 12px; 
-    font-weight: 600; 
+    font-weight: 700; 
     font-size: 16px; 
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     cursor: pointer; 
     display: block;
-    transition: background 0.3s;
+    transition: background 0.3s, box-shadow 0.3s;
+    box-shadow: 0 8px 16px rgba(203, 163, 92, 0.2);
 }
 
 .success-close-btn:active {
     background: #b89251; /* Эффект нажатия */
+    box-shadow: 0 5px 10px rgba(203, 163, 92, 0.3);
 }
 
 @media screen and (max-width: 480px) {
