@@ -250,44 +250,55 @@ async function finalCheckout() {
         return;
     }
 
-    // Собираем текст заказа
-    let message = `👤 Клієнт: ${name}\n📞 Телефон: ${phone}\n\n🛒 Замовлення:\n`;
+    // Собираем данные для n8n
     let cartItems = [];
-    
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
             const title = card.querySelector('.product-title').innerText.trim();
             const count = parseInt(card.querySelector('.count-value').innerText);
-            message += `▪️ ${title}: ${count} шт.\n`;
             cartItems.push({ name: title, quantity: count, id: card.getAttribute('data-id') });
         }
     });
-    
-    message += `\n💰 Разом: ${totalSum} ₴`;
 
-    // 1. Отправляем данные Аудитору в n8n (фоном)
+    // 1. Отправляем Аудитору (n8n сделает всё остальное: спишет остатки, пришлет тебе уведомление)
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: cartItems, customer: name, phone: phone })
-    }).catch(e => console.error("Ошибка n8n:", e));
+    }).catch(e => console.error("Помилка n8n:", e));
 
-    // 2. ФОРМИРУЕМ ССЫЛКУ
-    // Используем прямой формат ссылки для Телеграм
-    const encodedText = encodeURIComponent(message);
-    const tgUrl = `https://t.me/tinellton?text=${encodedText}`;
+    // 2. Показываем красивое окно успеха
+    showSuccessOrder();
+}
 
-    // 3. ПЕРЕХОД (Двойная страховка)
-    console.log("Переход по ссылке:", tgUrl);
-    
-    // Пытаемся перейти в текущем окне
-    window.location.assign(tgUrl);
+function showSuccessOrder() {
+    // Создаем элемент, если его нет
+    let overlay = document.getElementById('success-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'success-overlay';
+        overlay.className = 'success-overlay';
+        document.body.appendChild(overlay);
+    }
 
-    // Если через 500мс страница не сменилась (браузер заблокировал переход), открываем в новом
-    setTimeout(() => {
-        window.open(tgUrl, '_blank');
-    }, 500);
+    // Шикарный текст для Luxury Boutique
+    overlay.innerHTML = `
+        <div class="success-card">
+            <span class="success-icon">✨</span>
+            <h2 style="color: #CBA35C; margin-bottom: 10px; text-transform: uppercase;">Дякуємо за вибір!</h2>
+            <p style="color: #333; font-size: 16px; line-height: 1.5;">
+                Ваше замовлення прийнято. <br>
+                Флорист вже почав створювати ваш ідеальний букет. <br>
+                Ми зателефонуємо вам протягом 5 хвилин для підтвердження.
+            </p>
+            <button onclick="location.reload()" class="checkout-btn" style="margin-top: 25px;">Зрозуміло</button>
+        </div>
+    `;
+
+    // Закрываем корзину и показываем анимацию
+    closeCart();
+    overlay.classList.add('active');
 }
 
 // 8. ФИЛЬТРЫ И ИНИЦИАЛИЗАЦИЯ
