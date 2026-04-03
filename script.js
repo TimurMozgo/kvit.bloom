@@ -7,14 +7,14 @@ if (tg) {
 
 let totalSum = 0;
 
-// 1. Ключ для загрузки товаров (оставляем как был)
+// --- КОНФИГУРАЦИЯ URL (ТВОИ КЛЮЧИ) ---
+// 1. Загрузка товаров
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
 
-// 2. Твой старый ключ (переименовали в OLD, чтобы не мешал)
-const N8N_REDUCE_STOCK_URL_OLD = 'https://tiktiok.xyz/webhook-test/613a3f51-2e98-4f32-81e5-ebadd7f583eb';
+// 2. ССЫЛКА ДЛЯ СПИСАНИЯ (СЕЙЧАС СТОИТ TEST, ЧТОБЫ ТЫ НАСТРОИЛ N8N)
+const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook-test/613a3f51-2e98-4f32-81e5-ebadd7f583eb';
 
-// 3. Твой НОВЫЙ ключ для заказов цветов (добавили FLOWERS в название)
-const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/88111e6c-d8b9-4fc4-8d69-b0a712f5410f';
+const N8N_REDUCE_STOCK_URL_PROD = 'https://tiktiok.xyz/webhook/88111e6c-d8b9-4fc4-8d69-b0a712f5410f';
 
 // 1. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
@@ -52,6 +52,10 @@ function showFiltered(items) {
         const price = parseInt(String(item['Цена']).replace(/\D/g, '')) || 0;
         const img = item['Фото'] || '';
         const rawDesc = item['Описание'] || 'Преміальний букет зі свіжих квітів.';
+        
+        // --- НОВОЕ: ОСТАТКИ ТОВАРА ---
+        const stock = parseInt(item['Кол-во']) || 0;
+        const stockLabel = stock > 0 ? `Залишилось: ${stock} шт.` : `<span style="color:#ff4d4d;">Немає в наявності</span>`;
 
         const cleanTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         const cleanDesc = rawDesc.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\r?\n|\r/g, " ");
@@ -64,15 +68,18 @@ function showFiltered(items) {
                 <div class="product-info">
                     <h3 class="product-title">${title}</h3>
                     <p class="product-price">${price} ₴</p>
+                    <p style="font-size: 12px; color: #888; margin-bottom: 10px;">${stockLabel}</p>
                     
                     <button class="details-btn" onclick="openProductDetails('${id}', '${cleanTitle}', '${img}', '${cleanDesc}', ${price})">Докладніше</button>
                     
-                    <button class="buy-btn" onclick="showCounter(this)">Додати</button>
-                    <div class="counter-container" style="display: none;">
-                        <button class="count-btn" onclick="changeCount(this, -1)">-</button>
-                        <span class="count-value">1</span>
-                        <button class="count-btn" onclick="changeCount(this, 1)">+</button>
-                    </div>
+                    ${stock > 0 ? `
+                        <button class="buy-btn" onclick="showCounter(this)">Додати</button>
+                        <div class="counter-container" style="display: none;">
+                            <button class="count-btn" onclick="changeCount(this, -1)">-</button>
+                            <span class="count-value">1</span>
+                            <button class="count-btn" onclick="changeCount(this, 1)">+</button>
+                        </div>
+                    ` : `<button class="buy-btn" disabled style="background:#222; color:#555;">Sold Out</button>`}
                 </div>
             </div>`;
     });
@@ -104,7 +111,6 @@ function openProductDetails(id, title, img, desc, price) {
 }
 
 function addToCartFromDetails(id) {
-    // Находим карточку по ID
     const card = document.querySelector(`.product-card[data-id="${id}"]`);
     if (card) {
         const buyBtn = card.querySelector('.buy-btn');
@@ -114,7 +120,7 @@ function addToCartFromDetails(id) {
             const plusBtn = card.querySelector('.count-btn:last-child');
             if (plusBtn) changeCount(plusBtn, 1);
         }
-        closeDetails(); // Закрываем модалку после успешного добавления
+        closeDetails();
     }
 }
 
@@ -251,7 +257,7 @@ function deleteProductById(id) {
 }
 
 
-// 7. ФИНАЛЬНЫЙ ЗАКАЗ (С АНИМАЦИЕЙ УСПЕХА И ОТПРАВКОЙ АУДИТОРУ)
+// 7. ФИНАЛЬНЫЙ ЗАКАЗ
 async function finalCheckout() {
     const nameInput = document.getElementById('customer-name').value.trim();
     const phoneInput = document.getElementById('customer-phone').value.trim();
@@ -261,54 +267,50 @@ async function finalCheckout() {
         return;
     }
 
-    // --- СБОР ДАННЫХ ИЗ TELEGRAM ---
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user || {};
     
-    // Получаем ID, Nickname и Имя из профиля ТГ
     const tgId = user.id || 'Не указан';
     const tgUsername = user.username ? `@${user.username}` : 'Нет юзернейма';
     const tgFullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Скрыто';
 
-    // --- СБОР ТОВАРОВ ---
     let cartItems = [];
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
             const title = card.querySelector('.product-title').innerText.trim();
             const count = parseInt(card.querySelector('.count-value').innerText);
-            cartItems.push(`${title} (${count} шт)`);
+            cartItems.push({ name: title, quantity: count });
         }
     });
 
-    // --- ФОРМИРОВАНИЕ ДАННЫХ ДЛЯ n8n (Аудитора) ---
     const orderData = {
-        customer_name: nameInput,      // Имя из формы
-        customer_phone: phoneInput,    // Телефон из формы
-        tg_id: tgId,                   // Telegram ID
-        tg_username: tgUsername,       // @username для связи
-        tg_display_name: tgFullName,   // Имя в самом Телеграме
-        order_list: cartItems.join(', '), // Список товаров строкой
-        total_sum: totalSum + " ₴",    // Сумма заказа
-        timestamp: new Date().toLocaleString('uk-UA') // Время заказа
+        customer_name: nameInput,
+        customer_phone: phoneInput,
+        tg_id: tgId,
+        tg_username: tgUsername,
+        tg_display_name: tgFullName,
+        order_list: cartItems.map(i => `${i.name} (${i.quantity} шт)`).join(', '),
+        // ДЛЯ SPLIT OUT: передаем массив объектов
+        items: cartItems, 
+        total_sum: totalSum + " ₴",
+        timestamp: new Date().toLocaleString('uk-UA')
     };
 
-    // 1. Отправляем Аудитору (n8n)
-    // Убедись, что N8N_REDUCE_STOCK_URL — это твой Production URL из вебхука n8n
+    // ОТПРАВЛЯЕМ В N8N
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
     })
     .then(response => {
-        console.log("Дані успішно надіслані Аудитору в n8n");
+        console.log("Дані успішно надіслані");
+        showSuccessOrder();
     })
     .catch(e => {
         console.error("Помилка n8n:", e);
+        alert("Помилка при оформленні. Спробуйте ще раз.");
     });
-
-    // 2. Показываем ахуенное окно успеха
-    showSuccessOrder();
 }
 
 function showSuccessOrder() {
@@ -320,31 +322,22 @@ function showSuccessOrder() {
         document.body.appendChild(overlay);
     }
 
-    // Чистый HTML (стили только в CSS!)
     overlay.innerHTML = `
     <div class="success-card">
         <div class="success-icon">✨</div>
         <h2 class="success-header">Дякуємо за вибір!</h2>
         <p class="success-p">
             Ваше замовлення прийнято.<br>
-            Флорист вже почав створювати ваш ідеальний букет. 🌸<br>
-            Ми зателефонуємо вам протягом 5 хвилин для підтвердження.
+            Флорист вже почав створювати ваш ідеальний букет. 🌸
         </p>
-        <button onclick="location.reload()" class="success-close-btn">
-            Зрозуміло
-        </button>
-    </div>
-    `;
+        <button onclick="location.reload()" class="success-close-btn">Зрозуміло</button>
+    </div>`;
 
-    closeCart(); // Закрываем корзину
-
-    // Запускаем плавную анимацию появления
-    setTimeout(() => {
-        overlay.classList.add('active');
-    }, 50);
+    closeCart();
+    setTimeout(() => overlay.classList.add('active'), 50);
 }
 
-// 8. ФИЛЬТРЫ И ИНИЦИАЛИЗАЦИЯ
+// 8. ФИЛЬТРЫ
 function filterProducts(category, btn) {
     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
