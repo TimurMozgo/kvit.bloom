@@ -250,26 +250,44 @@ async function finalCheckout() {
         return;
     }
 
-    let message = `👤 *Клієнт:* ${name}\n📞 *Телефон:* ${phone}\n\n🛒 *Замовлення:*\n`;
+    // Собираем текст заказа
+    let message = `👤 Клієнт: ${name}\n📞 Телефон: ${phone}\n\n🛒 Замовлення:\n`;
     let cartItems = [];
+    
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
             const title = card.querySelector('.product-title').innerText.trim();
             const count = parseInt(card.querySelector('.count-value').innerText);
-            message += `▪️ *${title}*: ${count} шт.\n`;
+            message += `▪️ ${title}: ${count} шт.\n`;
             cartItems.push({ name: title, quantity: count, id: card.getAttribute('data-id') });
         }
     });
-    message += `\n💰 *Разом: ${totalSum} ₴*`;
     
+    message += `\n💰 Разом: ${totalSum} ₴`;
+
+    // 1. Отправляем данные Аудитору в n8n (фоном)
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: cartItems, customer: name, phone: phone })
-    }).catch(e => console.error(e));
+    }).catch(e => console.error("Ошибка n8n:", e));
 
-    window.location.href = `https://t.me/tinellton?text=${encodeURIComponent(message)}`;
+    // 2. ФОРМИРУЕМ ССЫЛКУ
+    // Используем прямой формат ссылки для Телеграм
+    const encodedText = encodeURIComponent(message);
+    const tgUrl = `https://t.me/tinellton?text=${encodedText}`;
+
+    // 3. ПЕРЕХОД (Двойная страховка)
+    console.log("Переход по ссылке:", tgUrl);
+    
+    // Пытаемся перейти в текущем окне
+    window.location.assign(tgUrl);
+
+    // Если через 500мс страница не сменилась (браузер заблокировал переход), открываем в новом
+    setTimeout(() => {
+        window.open(tgUrl, '_blank');
+    }, 500);
 }
 
 // 8. ФИЛЬТРЫ И ИНИЦИАЛИЗАЦИЯ
