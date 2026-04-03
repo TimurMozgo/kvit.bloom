@@ -3,8 +3,15 @@
 */
 
 let totalSum = 0;
+
+// 1. Ключ для загрузки товаров (оставляем как был)
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
-const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/613a3f51-2e98-4f32-81e5-ebadd7f583eb'; 
+
+// 2. Твой старый ключ (переименовали в OLD, чтобы не мешал)
+const N8N_REDUCE_STOCK_URL_OLD = 'https://tiktiok.xyz/webhook/613a3f51-2e98-4f32-81e5-ebadd7f583eb';
+
+// 3. Твой НОВЫЙ ключ для заказов цветов (добавили FLOWERS в название)
+const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook-test/88111e6c-d8b9-4fc4-8d69-b0a712f5410f';
 
 // 1. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
@@ -240,36 +247,64 @@ function deleteProductById(id) {
     renderCartItems();
 }
 
-// 7. ФИНАЛЬНЫЙ ЗАКАЗ
 
-// 7. ФИНАЛЬНЫЙ ЗАКАЗ (С АНИМАЦИЕЙ УСПЕХА)
+// 7. ФИНАЛЬНЫЙ ЗАКАЗ (С АНИМАЦИЕЙ УСПЕХА И ОТПРАВКОЙ АУДИТОРУ)
 async function finalCheckout() {
-    const name = document.getElementById('customer-name').value.trim();
-    const phone = document.getElementById('customer-phone').value.trim();
+    const nameInput = document.getElementById('customer-name').value.trim();
+    const phoneInput = document.getElementById('customer-phone').value.trim();
 
-    if (!name || !phone) {
+    if (!nameInput || !phoneInput) {
         alert("Будь ласка, введіть ім'я та номер телефону 🌸");
         return;
     }
 
+    // --- СБОР ДАННЫХ ИЗ TELEGRAM ---
+    const tg = window.Telegram?.WebApp;
+    const user = tg?.initDataUnsafe?.user || {};
+    
+    // Получаем ID, Nickname и Имя из профиля ТГ
+    const tgId = user.id || 'Не указан';
+    const tgUsername = user.username ? `@${user.username}` : 'Нет юзернейма';
+    const tgFullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Скрыто';
+
+    // --- СБОР ТОВАРОВ ---
     let cartItems = [];
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
             const title = card.querySelector('.product-title').innerText.trim();
             const count = parseInt(card.querySelector('.count-value').innerText);
-            cartItems.push({ name: title, quantity: count, id: card.getAttribute('data-id') });
+            cartItems.push(`${title} (${count} шт)`);
         }
     });
 
+    // --- ФОРМИРОВАНИЕ ДАННЫХ ДЛЯ n8n (Аудитора) ---
+    const orderData = {
+        customer_name: nameInput,      // Имя из формы
+        customer_phone: phoneInput,    // Телефон из формы
+        tg_id: tgId,                   // Telegram ID
+        tg_username: tgUsername,       // @username для связи
+        tg_display_name: tgFullName,   // Имя в самом Телеграме
+        order_list: cartItems.join(', '), // Список товаров строкой
+        total_sum: totalSum + " ₴",    // Сумма заказа
+        timestamp: new Date().toLocaleString('uk-UA') // Время заказа
+    };
+
     // 1. Отправляем Аудитору (n8n)
+    // Убедись, что N8N_REDUCE_STOCK_URL — это твой Production URL из вебхука n8n
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cartItems, customer: name, phone: phone })
-    }).catch(e => console.error("Помилка n8n:", e));
+        body: JSON.stringify(orderData)
+    })
+    .then(response => {
+        console.log("Дані успішно надіслані Аудитору в n8n");
+    })
+    .catch(e => {
+        console.error("Помилка n8n:", e);
+    });
 
-    // 2. Показываем красивое окно успеха
+    // 2. Показываем ахуенное окно успеха
     showSuccessOrder();
 }
 
@@ -282,25 +317,25 @@ function showSuccessOrder() {
         document.body.appendChild(overlay);
     }
 
-   overlay.innerHTML = `
+    // Чистый HTML (стили только в CSS!)
+    overlay.innerHTML = `
     <div class="success-card">
-        <div style="font-size: 60px; margin-bottom: 15px;">✨</div>
+        <div class="success-icon">✨</div>
         <h2 class="success-header">Дякуємо за вибір!</h2>
-        
         <p class="success-p">
             Ваше замовлення прийнято.<br>
             Флорист вже почав створювати ваш ідеальний букет. 🌸<br>
             Ми зателефонуємо вам протягом 5 хвилин для підтвердження.
         </p>
-        
         <button onclick="location.reload()" class="success-close-btn">
             Зрозуміло
         </button>
     </div>
     `;
-    closeCart(); // Закрываем корзину перед показом успеха
 
-    // Запускаем плавную анимацию через микро-задержку
+    closeCart(); // Закрываем корзину
+
+    // Запускаем плавную анимацию появления
     setTimeout(() => {
         overlay.classList.add('active');
     }, 50);
