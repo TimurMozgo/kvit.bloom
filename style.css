@@ -368,3 +368,26 @@ header {
     margin-bottom: 20px;
     display: block;
 }
+
+@media screen and (max-width: 480px) {
+    .success-card {
+        width: calc(100% - 40px); /* Вся ширина минус отступы по 20px */
+        margin: 20px;
+        padding: 30px 20px; /* Чуть меньше падинги, чтобы текст влез */
+        border-radius: 20px; /* На мобилке углы поменьше смотрятся аккуратнее */
+    }
+
+    .success-header {
+        font-size: 18px; /* Чуть уменьшим шрифт заголовка */
+    }
+
+    .success-p {
+        font-size: 14px; /* Чтобы текст не казался огромным */
+        line-height: 1.5;
+    }
+
+    .success-close-btn {
+        padding: 14px; /* Кнопка чуть компактнее */
+        font-size: 15px;
+    }
+}
