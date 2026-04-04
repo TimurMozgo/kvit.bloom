@@ -311,7 +311,7 @@ async function finalCheckout() {
     const orderData = {
         customer_name: nameInput,
         customer_phone: phoneInput,
-        tg_id: user.id || 6750749768, // Твой ID для тестов в браузере
+        tg_id: user.id || 'Не указан',
         order_list: cartItems.map(i => `${i.name} (${i.quantity} шт)`).join(', '),
         items: cartItems, // !!! ВОТ ЭТОГО НЕ ХВАТАЛО !!!
         total_sum: totalSum + " ₴",
