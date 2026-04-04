@@ -7,14 +7,15 @@ if (tg) {
 
 let totalSum = 0;
 
-// --- КОНФИГУРАЦИЯ URL (ТВОИ КЛЮЧИ) ---
+// --- КОНФИГУРАЦИЯ URL (КЛЮЧИ)
 // 1. Загрузка товаров
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
 
 // 2. ССЫЛКА ДЛЯ СПИСАНИЯ (СЕЙЧАС СТОИТ TEST, ЧТОБЫ ТЫ НАСТРОИЛ N8N)
 const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/613a3f51-2e98-4f32-81e5-ebadd7f583eb';
 
-const N8N_REDUCE_STOCK_URL_PROD = 'https://tiktiok.xyz/webhook/88111e6c-d8b9-4fc4-8d69-b0a712f5410f';
+// ключ для сообщения администратору
+const N8N_REDUCE_STOCK_URL_PROD = 'https://tiktiok.xyz/webhook/4da37afc-37ca-4ea3-9fe0-ffb287465212';
 
 // 1. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
@@ -257,7 +258,7 @@ function deleteProductById(id) {
 }
 
 
-// 7. ФИНАЛЬНЫЙ ЗАКАЗ
+// 7. ФИНАЛЬНЫЙ ЗАКАЗ (ОБНОВЛЕННЫЙ ДУПЛЕТ)
 async function finalCheckout() {
     const nameInput = document.getElementById('customer-name').value.trim();
     const phoneInput = document.getElementById('customer-phone').value.trim();
@@ -291,50 +292,37 @@ async function finalCheckout() {
         tg_username: tgUsername,
         tg_display_name: tgFullName,
         order_list: cartItems.map(i => `${i.name} (${i.quantity} шт)`).join(', '),
-        // ДЛЯ SPLIT OUT: передаем массив объектов
         items: cartItems, 
         total_sum: totalSum + " ₴",
         timestamp: new Date().toLocaleString('uk-UA')
     };
 
-    // ОТПРАВЛЯЕМ В N8N
-    fetch(N8N_REDUCE_STOCK_URL, {
+    // --- ОТПРАВЛЯЕМ СРАЗУ НА ДВА ВЕБХУКА ---
+
+    // 1. Запрос к Аудитору (Списание)
+    const stockRequest = fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
-    })
-    .then(response => {
-        console.log("Дані успішно надіслані");
-        showSuccessOrder();
-    })
-    .catch(e => {
-        console.error("Помилка n8n:", e);
-        alert("Помилка при оформленні. Спробуйте ще раз.");
     });
-}
 
-function showSuccessOrder() {
-    let overlay = document.getElementById('success-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'success-overlay';
-        overlay.className = 'success-overlay';
-        document.body.appendChild(overlay);
+    // 2. Запрос к Администратору (Уведомление в ТГ)
+    const adminRequest = fetch(N8N_REDUCE_STOCK_URL_PROD, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+    });
+
+    try {
+        // Ждем выполнения обоих запросов
+        await Promise.all([stockRequest, adminRequest]);
+        
+        console.log("Данные успешно ушли обоим ботам");
+        showSuccessOrder(); // Показываем окно успеха
+    } catch (e) {
+        console.error("Ошибка при отправке заказа:", e);
+        alert("Помилка при оформленні. Зв'яжіться с нами напряму.");
     }
-
-    overlay.innerHTML = `
-    <div class="success-card">
-        <div class="success-icon">✨</div>
-        <h2 class="success-header">Дякуємо за вибір!</h2>
-        <p class="success-p">
-            Ваше замовлення прийнято.<br>
-            Флорист вже почав створювати ваш ідеальний букет. 🌸
-        </p>
-        <button onclick="location.reload()" class="success-close-btn">Зрозуміло</button>
-    </div>`;
-
-    closeCart();
-    setTimeout(() => overlay.classList.add('active'), 50);
 }
 
 // 8. ФИЛЬТРЫ
