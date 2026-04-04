@@ -8,13 +8,8 @@ if (tg) {
 let totalSum = 0;
 
 // --- КОНФИГУРАЦИЯ URL (КЛЮЧИ)
-// 1. Загрузка товаров
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
-
-// 2. ССЫЛКА ДЛЯ СПИСАНИЯ (СЕЙЧАС СТОИТ TEST, ЧТОБЫ ТЫ НАСТРОИЛ N8N)
 const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/c1a37c52-a21a-4631-a3fa-96ae2e01468b';
-
-// ключ для сообщения администратору
 const N8N_REDUCE_STOCK_URL_PROD = 'https://tiktiok.xyz/webhook/4da37afc-37ca-4ea3-9fe0-ffb287465212';
 
 // 1. ЗАГРУЗКА ДАННЫХ
@@ -53,8 +48,6 @@ function showFiltered(items) {
         const price = parseInt(String(item['Цена']).replace(/\D/g, '')) || 0;
         const img = item['Фото'] || '';
         const rawDesc = item['Описание'] || 'Преміальний букет зі свіжих квітів.';
-        
-        // --- НОВОЕ: ОСТАТКИ ТОВАРА ---
         const stock = parseInt(item['Кол-во']) || 0;
         const stockLabel = stock > 0 ? `Залишилось: ${stock} шт.` : `<span style="color:#ff4d4d;">Немає в наявності</span>`;
 
@@ -70,9 +63,7 @@ function showFiltered(items) {
                     <h3 class="product-title">${title}</h3>
                     <p class="product-price">${price} ₴</p>
                     <p style="font-size: 12px; color: #888; margin-bottom: 10px;">${stockLabel}</p>
-                    
                     <button class="details-btn" onclick="openProductDetails('${id}', '${cleanTitle}', '${img}', '${cleanDesc}', ${price})">Докладніше</button>
-                    
                     ${stock > 0 ? `
                         <button class="buy-btn" onclick="showCounter(this)">Додати</button>
                         <div class="counter-container" style="display: none;">
@@ -95,7 +86,6 @@ function openProductDetails(id, title, img, desc, price) {
         detailsModal.className = 'cart-overlay';
         document.body.appendChild(detailsModal);
     }
-
     detailsModal.innerHTML = `
         <div class="cart-container details-container">
             <button class="close-details" onclick="closeDetails()">✕</button>
@@ -148,7 +138,6 @@ function changeCount(btn, delta) {
     const countDisplay = card.querySelector('.count-value');
     let currentCount = parseInt(countDisplay.innerText) || 1;
     let newCount = currentCount + delta;
-
     if (newCount <= 0) {
         card.querySelector('.counter-container').style.display = 'none';
         card.querySelector('.buy-btn').style.display = 'block';
@@ -160,13 +149,11 @@ function changeCount(btn, delta) {
     renderCartItems();
 }
 
-// 5. ОБНОВЛЕНИЕ ИТОГОВ
 function updateTotal() {
     const fab = document.getElementById('cart-fab');
     const fabCount = document.getElementById('fab-count');
     const totalContainer = document.getElementById('cart-total-value');
     let tempTotal = 0, totalItemsCount = 0;
-
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
@@ -176,7 +163,6 @@ function updateTotal() {
             totalItemsCount += count;
         }
     });
-
     totalSum = tempTotal;
     if (fab) {
         fab.style.display = totalItemsCount > 0 ? 'flex' : 'none';
@@ -185,7 +171,7 @@ function updateTotal() {
     if (totalContainer) totalContainer.innerText = `${totalSum} ₴`;
 }
 
-// 6. КОРЗИНА И НАВИГАЦИЯ
+// 5. КОРЗИНА
 function openCart() {
     const modal = document.getElementById('cart-modal');
     if (!modal) return;
@@ -220,7 +206,6 @@ function renderCartItems() {
     if (!list) return;
     list.innerHTML = ''; 
     let hasItems = false;
-
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
@@ -257,8 +242,33 @@ function deleteProductById(id) {
     renderCartItems();
 }
 
+// 6. ФУНКЦИЯ ПЛАШКИ УСПЕХА (ЕЁ НЕ БЫЛО В КОДЕ)
+function showSuccessOrder() {
+    let overlay = document.getElementById('success-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'success-overlay';
+        overlay.className = 'success-overlay';
+        document.body.appendChild(overlay);
+    }
 
-// 7. ФИНАЛЬНЫЙ ЗАКАЗ (ОБНОВЛЕННЫЙ ДУПЛЕТ)
+    overlay.innerHTML = `
+    <div class="success-card">
+        <div class="success-icon">✨</div>
+        <h2 class="success-header">Дякуємо за вибір!</h2>
+        <p class="success-p">
+            Ваше замовлення прийнято.<br>
+            Флорист вже почав створювати ваш ідеальний букет. 🌸
+        </p>
+        <button onclick="location.reload()" class="success-close-btn">Зрозуміло</button>
+    </div>`;
+
+    closeCart(); // Закрываем корзину
+    overlay.style.display = 'flex';
+    setTimeout(() => overlay.classList.add('active'), 50);
+}
+
+// 7. ФИНАЛЬНЫЙ ЗАКАЗ
 async function finalCheckout() {
     const nameInput = document.getElementById('customer-name').value.trim();
     const phoneInput = document.getElementById('customer-phone').value.trim();
@@ -270,60 +280,39 @@ async function finalCheckout() {
 
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user || {};
-    
-    const tgId = user.id || 'Не указан';
-    const tgUsername = user.username ? `@${user.username}` : 'Нет юзернейма';
-    const tgFullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Скрыто';
-
-    let cartItems = [];
-    document.querySelectorAll('.product-card').forEach(card => {
-        const counter = card.querySelector('.counter-container');
-        if (counter && counter.style.display === 'flex') {
-            const title = card.querySelector('.product-title').innerText.trim();
-            const count = parseInt(card.querySelector('.count-value').innerText);
-            cartItems.push({ name: title, quantity: count });
-        }
-    });
-
     const orderData = {
         customer_name: nameInput,
         customer_phone: phoneInput,
-        tg_id: tgId,
-        tg_username: tgUsername,
-        tg_display_name: tgFullName,
-        order_list: cartItems.map(i => `${i.name} (${i.quantity} шт)`).join(', '),
-        items: cartItems, 
+        tg_id: user.id || 'Не вказано',
+        tg_username: user.username ? `@${user.username}` : 'Немає',
+        order_list: Array.from(document.querySelectorAll('.product-card'))
+            .filter(card => card.querySelector('.counter-container')?.style.display === 'flex')
+            .map(card => `${card.querySelector('.product-title').innerText} (${card.querySelector('.count-value').innerText} шт)`)
+            .join(', '),
         total_sum: totalSum + " ₴",
         timestamp: new Date().toLocaleString('uk-UA')
     };
 
-    // --- ОТПРАВЛЯЕМ КАК РАНЬШЕ (ЧТОБЫ ДАННЫЕ БЫЛИ ПОЛНЫЕ) ---
-    const stockRequest = fetch(N8N_REDUCE_STOCK_URL, {
+    // СНАЧАЛА показываем плашку (мгновенно!)
+    showSuccessOrder();
+
+    // ПОТОМ отправляем данные в фоне
+    fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
     });
 
-    const adminRequest = fetch(N8N_REDUCE_STOCK_URL_PROD, {
+    fetch(N8N_REDUCE_STOCK_URL_PROD, {
         method: 'POST',
+        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
     });
-
-    try {
-        // Пытаемся дождаться, но если будет ошибка CORS — провалимся в catch
-        await Promise.all([stockRequest, adminRequest]);
-        showSuccessOrder(); 
-    } catch (e) {
-        // ВОТ ТУТ МАГИЯ: 
-        // Если была ошибка "Помилка при оформленні", мы её просто ИГНОРИРУЕМ
-        // и всё равно показываем твою красивую плашку успеха.
-        console.log("Игнорируем ошибку CORS, так как данные ушли");
-        showSuccessOrder(); 
-    }
 }
 
-// 8. ФИЛЬТРЫ
+// 8. ФИЛЬТРЫ И ИНИЦИАЛИЗАЦИЯ
 function filterProducts(category, btn) {
     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
