@@ -293,12 +293,8 @@ async function finalCheckout() {
         return;
     }
 
-    // --- ШАГ 1: МГНОВЕННО ПОКАЗЫВАЕМ ПЛАШКУ ---
-    // Мы вызываем её ДО всех запросов. Юзер сразу видит "Дякуємо", 
-    // пока интернет там копошится с отправкой.
     showSuccessOrder(); 
 
-    // --- ШАГ 2: СОБИРАЕМ ДАННЫЕ ---
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user || {};
     
@@ -315,15 +311,13 @@ async function finalCheckout() {
     const orderData = {
         customer_name: nameInput,
         customer_phone: phoneInput,
-        tg_id: user.id || 'Не указан',
+        tg_id: user.id || 6750749768, // Твой ID для тестов в браузере
         order_list: cartItems.map(i => `${i.name} (${i.quantity} шт)`).join(', '),
+        items: cartItems, // !!! ВОТ ЭТОГО НЕ ХВАТАЛО !!!
         total_sum: totalSum + " ₴",
         timestamp: new Date().toLocaleString('uk-UA')
     };
 
-    // --- ШАГ 3: ОТПРАВЛЯЕМ В ФОНЕ (БЕЗ AWAIT) ---
-    // Мы убираем 'await', чтобы скрипт не ждал ответа от n8n.
-    // Если данные улетели — отлично. Не улетели — юзер всё равно уже видит успех.
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
