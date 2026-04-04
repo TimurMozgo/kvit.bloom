@@ -293,13 +293,15 @@ async function finalCheckout() {
         return;
     }
 
+    // --- ШАГ 1: МГНОВЕННО ПОКАЗЫВАЕМ ПЛАШКУ ---
+    // Мы вызываем её ДО всех запросов. Юзер сразу видит "Дякуємо", 
+    // пока интернет там копошится с отправкой.
+    showSuccessOrder(); 
+
+    // --- ШАГ 2: СОБИРАЕМ ДАННЫЕ ---
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user || {};
     
-    const tgId = user.id || 'Не указан';
-    const tgUsername = user.username ? `@${user.username}` : 'Нет юзернейма';
-    const tgFullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Скрыто';
-
     let cartItems = [];
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
@@ -313,30 +315,26 @@ async function finalCheckout() {
     const orderData = {
         customer_name: nameInput,
         customer_phone: phoneInput,
-        tg_id: tgId,
-        tg_username: tgUsername,
-        tg_display_name: tgFullName,
+        tg_id: user.id || 'Не указан',
         order_list: cartItems.map(i => `${i.name} (${i.quantity} шт)`).join(', '),
-        items: cartItems, 
         total_sum: totalSum + " ₴",
         timestamp: new Date().toLocaleString('uk-UA')
     };
 
-    // СНАЧАЛА ЖЕСТКО ВЫЗЫВАЕМ ПЛАШКУ (чтобы клиент сразу её увидел)
-    showSuccessOrder();
-
-    // ЗАТЕМ ФОНОМ СТРЕЛЯЕМ ДАННЫМИ (без зависаний браузера)
+    // --- ШАГ 3: ОТПРАВЛЯЕМ В ФОНЕ (БЕЗ AWAIT) ---
+    // Мы убираем 'await', чтобы скрипт не ждал ответа от n8n.
+    // Если данные улетели — отлично. Не улетели — юзер всё равно уже видит успех.
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
-    }).catch(e => console.log("Аудитор в деле"));
+    }).catch(e => console.log("Фоновая отправка 1 завершена"));
 
     fetch(N8N_REDUCE_STOCK_URL_PROD, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
-    }).catch(e => console.log("Админ в деле"));
+    }).catch(e => console.log("Фоновая отправка 2 завершена"));
 }
 
 // 8. ФИЛЬТРЫ И ИНИЦИАЛИЗАЦИЯ
