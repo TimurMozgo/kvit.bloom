@@ -259,7 +259,6 @@ function deleteProductById(id) {
 
 
 // 7. ФИНАЛЬНЫЙ ЗАКАЗ (ОБНОВЛЕННЫЙ ДУПЛЕТ)
-
 async function finalCheckout() {
     const nameInput = document.getElementById('customer-name').value.trim();
     const phoneInput = document.getElementById('customer-phone').value.trim();
@@ -298,33 +297,26 @@ async function finalCheckout() {
         timestamp: new Date().toLocaleString('uk-UA')
     };
 
-    // --- ОТПРАВЛЯЕМ СРАЗУ НА ДВА ВЕБХУКА ---
-    try {
-        // 1. Запрос к Аудитору (Списание)
-        fetch(N8N_REDUCE_STOCK_URL, {
-            method: 'POST',
-            mode: 'no-cors', // Убирает ошибку CORS
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        });
+    // --- ОТПРАВЛЯЕМ БЕЗ ОЖИДАНИЯ И БЕЗ CORS-ОШИБОК ---
+    
+    // Просто стреляем запросами в пустоту (n8n их поймает)
+    fetch(N8N_REDUCE_STOCK_URL, {
+        method: 'POST',
+        mode: 'no-cors', // КРИТИЧНО: убирает плашку с ошибкой
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+    }).catch(e => console.log("Silent catch stock"));
 
-        // 2. Запрос к Администратору (Уведомление в ТГ)
-        fetch(N8N_REDUCE_STOCK_URL_PROD, {
-            method: 'POST',
-            mode: 'no-cors', // Убирает ошибку CORS
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        });
+    fetch(N8N_REDUCE_STOCK_URL_PROD, {
+        method: 'POST',
+        mode: 'no-cors', // КРИТИЧНО: убирает плашку с ошибкой
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+    }).catch(e => console.log("Silent catch admin"));
 
-        // Не ждем ответа (await), а сразу радуем клиента
-        console.log("Данные отправлены");
-        showSuccessOrder(); 
-
-    } catch (e) {
-        // Если вдруг интернет совсем пропал, все равно пробуем показать успех
-        console.error("Ошибка при отправке заказа:", e);
-        showSuccessOrder();
-    }
+    // МГНОВЕННО показываем твою красивую плашку успеха
+    console.log("Данные отправлены, радуем клиента");
+    showSuccessOrder(); 
 }
 
 // 8. ФИЛЬТРЫ
