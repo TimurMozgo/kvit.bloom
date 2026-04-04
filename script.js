@@ -242,33 +242,48 @@ function deleteProductById(id) {
     renderCartItems();
 }
 
-// 6. ФУНКЦИЯ ПЛАШКИ УСПЕХА (ЕЁ НЕ БЫЛО В КОДЕ)
+// 6. ФУНКЦИЯ ПЛАШКИ УСПЕХА 
 function showSuccessOrder() {
+    // Жестко вырубаем корзину без анимаций, чтобы она не перекрывала экран
+    const cartModal = document.getElementById('cart-modal');
+    if (cartModal) {
+        cartModal.style.display = 'none'; 
+        cartModal.classList.remove('active');
+    }
+
     let overlay = document.getElementById('success-overlay');
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'success-overlay';
-        overlay.className = 'success-overlay';
         document.body.appendChild(overlay);
     }
 
+    // Вливаем стили напрямую через JS (z-index: 999999), чтобы пробить любые слои!
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.9)';
+    overlay.style.zIndex = '999999'; 
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+
+    // Внутрянка твоей плашки со встроенными стилями
     overlay.innerHTML = `
-    <div class="success-card">
-        <div class="success-icon">✨</div>
-        <h2 class="success-header">Дякуємо за вибір!</h2>
-        <p class="success-p">
+    <div style="background:#111; padding:40px 20px; border-radius:20px; border:1px solid #CBA35C; text-align:center; max-width: 300px; width: 90%;">
+        <div style="font-size:50px; margin-bottom:20px;">✨</div>
+        <h2 style="color:#CBA35C; font-size:22px; margin-bottom:10px; text-transform:uppercase;">Дякуємо за вибір!</h2>
+        <p style="color:#888; margin-bottom:25px; line-height:1.5;">
             Ваше замовлення прийнято.<br>
             Флорист вже почав створювати ваш ідеальний букет. 🌸
         </p>
-        <button onclick="location.reload()" class="success-close-btn">Зрозуміло</button>
+        <button onclick="location.reload()" style="background:#CBA35C; color:#000; border:none; padding:12px 30px; border-radius:10px; font-weight:bold; width:100%; cursor:pointer;">Зрозуміло</button>
     </div>`;
-
-    closeCart(); // Закрываем корзину
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.classList.add('active'), 50);
 }
 
-// 7. ФИНАЛЬНЫЙ ЗАКАЗ
+// --- 7. ФИНАЛЬНЫЙ ЗАКАЗ ---
 async function finalCheckout() {
     const nameInput = document.getElementById('customer-name').value.trim();
     const phoneInput = document.getElementById('customer-phone').value.trim();
@@ -280,36 +295,48 @@ async function finalCheckout() {
 
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user || {};
+    
+    const tgId = user.id || 'Не указан';
+    const tgUsername = user.username ? `@${user.username}` : 'Нет юзернейма';
+    const tgFullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Скрыто';
+
+    let cartItems = [];
+    document.querySelectorAll('.product-card').forEach(card => {
+        const counter = card.querySelector('.counter-container');
+        if (counter && counter.style.display === 'flex') {
+            const title = card.querySelector('.product-title').innerText.trim();
+            const count = parseInt(card.querySelector('.count-value').innerText);
+            cartItems.push({ name: title, quantity: count });
+        }
+    });
+
     const orderData = {
         customer_name: nameInput,
         customer_phone: phoneInput,
-        tg_id: user.id || 'Не вказано',
-        tg_username: user.username ? `@${user.username}` : 'Немає',
-        order_list: Array.from(document.querySelectorAll('.product-card'))
-            .filter(card => card.querySelector('.counter-container')?.style.display === 'flex')
-            .map(card => `${card.querySelector('.product-title').innerText} (${card.querySelector('.count-value').innerText} шт)`)
-            .join(', '),
+        tg_id: tgId,
+        tg_username: tgUsername,
+        tg_display_name: tgFullName,
+        order_list: cartItems.map(i => `${i.name} (${i.quantity} шт)`).join(', '),
+        items: cartItems, 
         total_sum: totalSum + " ₴",
         timestamp: new Date().toLocaleString('uk-UA')
     };
 
-    // СНАЧАЛА показываем плашку (мгновенно!)
+    // СНАЧАЛА ЖЕСТКО ВЫЗЫВАЕМ ПЛАШКУ (чтобы клиент сразу её увидел)
     showSuccessOrder();
 
-    // ПОТОМ отправляем данные в фоне
+    // ЗАТЕМ ФОНОМ СТРЕЛЯЕМ ДАННЫМИ (без зависаний браузера)
     fetch(N8N_REDUCE_STOCK_URL, {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
-    });
+    }).catch(e => console.log("Аудитор в деле"));
 
     fetch(N8N_REDUCE_STOCK_URL_PROD, {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
-    });
+    }).catch(e => console.log("Админ в деле"));
 }
 
 // 8. ФИЛЬТРЫ И ИНИЦИАЛИЗАЦИЯ
