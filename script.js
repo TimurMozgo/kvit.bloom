@@ -10,7 +10,7 @@ let totalSum = 0;
 // Конфиг вебхуков
 
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
-const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook-test/c1a37c52-a21a-4631-a3fa-96ae2e01468b';
+const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/c1a37c52-a21a-4631-a3fa-96ae2e01468b';
 
 // 2 ПОИСК ЦВЕТОВ В ПОИСКОВОЙ ЛЕНТЕ
 function handleSearch() {
