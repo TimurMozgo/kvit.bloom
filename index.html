@@ -13,6 +13,11 @@
         <div class="logo">Kvit.Bloom</div>
     </header>
 
+    <div class="search-wrapper">
+        <input type="text" id="product-search" placeholder="Пошук квітів..." oninput="handleSearch()">
+        <span class="search-icon">🔍</span>
+    </div>
+
     <div class="categories-container">
         <button class="category-btn active" onclick="filterProducts('Все', this)">Всі</button>
         <button class="category-btn" onclick="filterProducts('Квіти', this)">Квіти</button>
@@ -27,51 +32,50 @@
     </main>
 
     <div class="cart-fab" id="cart-fab" onclick="openCart()" style="display: none;"> 
-        <span id="fab-count">0</span>
+        <div class="cart-icon-wrapper">
+            <span class="cart-emoji">🛒</span>
+            <span id="fab-count" class="cart-badge">0</span>
+        </div>
     </div>
 
     <div id="cart-modal" class="cart-overlay">
-        <div class="cart-container" style="position: relative;">
-            <button onclick="closeCart()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; z-index: 100; color: #333;">✕</button>
+        <div class="cart-container">
+            <button class="close-cart-btn" onclick="closeCart()">✕</button>
             
-            <div id="cart-header" class="cart-header">
-                <h2 style="margin: 0;">Кошик</h2>
+            <div class="cart-header">
+                <h2>Кошик</h2>
             </div>
             
             <div id="cart-stage-1">
-                <div id="cart-items-list" class="cart-items-list">
-                    </div>
-                
-                <div id="cart-total-container" class="cart-total-container" style="margin: 15px 0; font-size: 1.2em; border-top: 1px solid #eee; padding-top: 10px;">
+                <div id="cart-items-list" class="cart-items-list"></div>
+                <div class="cart-total-bar">
                     <b>Разом: </b><span id="cart-total-value">0 ₴</span>
                 </div>
-
-                <button id="checkout-btn" class="checkout-btn" onclick="goToCheckout()">
-                    Далі (Оформити)
-                </button>
+                <button id="checkout-btn" class="checkout-btn" onclick="goToCheckout()">Далі (Оформити)</button>
             </div>
 
             <div id="cart-stage-2" style="display: none;">
-                <div class="order-form" style="padding: 10px 0;">
-                    <h3 style="margin-bottom: 15px; font-size: 1.1em;">Деталі доставки:</h3>
-                    
-                    <input type="text" id="customer-name" placeholder="Ваше ім'я" 
-                        style="width: 100%; margin-bottom: 12px; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
-                    
-                    <input type="tel" id="customer-phone" placeholder="Номер телефону" 
-                        style="width: 100%; margin-bottom: 12px; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                <div class="order-form">
+                    <h3>Деталі доставки:</h3>
+                    <input type="text" id="customer-name" placeholder="Ваше ім'я">
+                    <input type="tel" id="customer-phone" placeholder="Номер телефону">
                 </div>
-
-                <div style="display: flex; gap: 10px;">
-                    <button class="checkout-btn" onclick="backToCart()" style="background: #f0f0f0; color: #333; flex: 1; border: none; cursor: pointer;">
-                        Назад
-                    </button>
-                    <button class="checkout-btn" onclick="finalCheckout()" style="flex: 2; border: none; cursor: pointer;">
-                        Замовити
-                    </button>
+                <div class="cart-footer-btns">
+                    <button class="back-btn" onclick="backToCart()">Назад</button>
+                    <button class="final-btn" onclick="finalCheckout()">Замовити</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="floric-fab" onclick="toggleContactMenu()">
+        <div class="pulse-ring"></div>
+        <span>ЧАТ</span>
+    </div>
+
+    <div id="contact-menu" class="contact-menu">
+        <a href="https://t.me/твой_ник" target="_blank" class="contact-link">Чат з флористом</a>
+        <a href="tel:+380000000000" class="contact-link">Зателефонувати</a>
     </div>
 
     <script src="script.js"></script>
