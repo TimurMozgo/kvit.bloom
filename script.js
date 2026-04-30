@@ -148,6 +148,10 @@ function showFiltered(items) {
 
 // 5. МОДАЛКА ПОДРОБНОСТЕЙ
 function openProductDetails(id, title, img, desc, price) {
+    // Прячем чат
+    const fab = document.querySelector('.floric-fab');
+    if (fab) fab.style.display = 'none';
+
     let detailsModal = document.getElementById('details-modal');
     if (!detailsModal) {
         detailsModal = document.createElement('div');
@@ -171,13 +175,16 @@ function openProductDetails(id, title, img, desc, price) {
 }
 
 function closeDetails() {
-    const modal = document.getElementById('details-modal');
-    if (modal) {
-        modal.classList.remove('active');
-        setTimeout(() => modal.style.display = 'none', 300);
+    const detailsModal = document.getElementById('details-modal');
+    if (detailsModal) {
+        detailsModal.classList.remove('active');
+        setTimeout(() => { detailsModal.style.display = 'none'; }, 300);
     }
+    
+    // Возвращаем чат
+    const fab = document.querySelector('.floric-fab');
+    if (fab) fab.style.display = 'flex';
 }
-
 function addToCartFromDetails(id) {
     const card = document.querySelector(`.product-card[data-id="${id}"]`);
     if (card) {
@@ -264,6 +271,10 @@ function updateTotal() {
 
 // 7. КОРЗИНА
 function openCart() {
+    // Прячем чат
+    const fab = document.querySelector('.floric-fab');
+    if (fab) fab.style.display = 'none';
+
     const modal = document.getElementById('cart-modal');
     if (!modal) return;
     document.getElementById('cart-stage-1').style.display = 'block';
@@ -277,8 +288,12 @@ function closeCart() {
     const modal = document.getElementById('cart-modal');
     if (modal) {
         modal.classList.remove('active');
-        setTimeout(() => modal.style.display = 'none', 300);
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
     }
+
+    // Возвращаем чат
+    const fab = document.querySelector('.floric-fab');
+    if (fab) fab.style.display = 'flex';
 }
 
 // НОВАЯ ФУНКЦИЯ: Рендер товаров с кнопками +/- и красивым ID
@@ -397,16 +412,21 @@ async function finalCheckout() {
     
     // Твои два разных ключа (вебхука)
     const ADMIN_WEBHOOK = 'https://tiktiok.xyz/webhook/4da37afc-37ca-4ea3-9fe0-ffb287465212'; // Уведомления
-    const STOCK_WEBHOOK = 'https://tiktiok.xyz/webhook-test/c1a37c52-a21a-4631-a3fa-96ae2e01468b'; // Списание (Аудитор)
+    const STOCK_WEBHOOK = 'https://tiktiok.xyz/webhook/c1a37c52-a21a-4631-a3fa-96ae2e01468b'; // Списание (Аудитор)
 
     if (!nameInput || !phoneInput) {
-        alert("Будь ласка, введіть ім'я та номер телефону 🌸");
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.showAlert("Будь ласка, введіть ім'я та номер телефону 🌸");
+        } else {
+            alert("Будь ласка, введіть ім'я та номер телефону 🌸");
+        }
         return;
     }
 
     const orderItems = [];
     let calculatedTotal = 0;
 
+    // Собираем данные из активных счетчиков
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
@@ -426,37 +446,59 @@ async function finalCheckout() {
         }
     });
 
+    if (orderItems.length === 0) {
+        alert("Кошик порожній 🌸");
+        return;
+    }
+
     const orderData = {
         customer_name: nameInput,
         customer_phone: phoneInput,
         order_list: orderItems.map(i => `${i.name} (${i.count} шт)`).join(', '),
-        details: orderItems, // Это для Аудитора
+        details: orderItems, // Массив для цикла в n8n (Аудитор)
         total_sum: calculatedTotal + " ₴",
         tg_user_id: tg.initDataUnsafe?.user?.id || 'unknown',
         timestamp: new Date().toLocaleString('uk-UA')
     };
 
-    showSuccessOrder(); 
+    // Блокируем кнопку, чтобы не натыкали лишнего, пока идет запрос
+    const finalBtn = document.querySelector('.final-btn');
+    if (finalBtn) {
+        finalBtn.disabled = true;
+        finalBtn.innerText = "Відправка...";
+    }
 
-    // ЗАПУСКАЕМ ОБА ПРОЦЕССА ОДНОВРЕМЕННО
     try {
-        // 1. Шлем админу
-        fetch(ADMIN_WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        });
+        // Запускаем оба запроса параллельно и ждем ответа от обоих
+        const [adminRes, stockRes] = await Promise.all([
+            fetch(ADMIN_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            }),
+            fetch(STOCK_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            })
+        ]);
 
-        // 2. Шлем Аудитору на списание
-        fetch(STOCK_WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        });
+        if (adminRes.ok && stockRes.ok) {
+            console.log('Сигналы приняты Аудитором и Админом.');
+            showSuccessOrder(); // Только теперь показываем экран успеха
+        } else {
+            throw new Error('Ошибка сервера');
+        }
 
-        console.log('Сигналы отправлены: и админу, и на склад.');
     } catch (e) {
-        console.error('Ошибка при отправке заказов:', e);
+        console.error('Ошибка при отправке заказа:', e);
+        alert("Помилка зв'язку. Перевірте інтернет та спробуйте ще раз 🌸");
+        
+        // Возвращаем кнопку в рабочее состояние
+        if (finalBtn) {
+            finalBtn.disabled = false;
+            finalBtn.innerText = "Замовити";
+        }
     }
 }
 

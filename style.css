@@ -776,6 +776,26 @@ header {
     cursor: pointer;
 }
 
+.final-btn {
+    width: auto; /* Не на всю ширину */
+    padding: 12px 30px; /* Аккуратные отступы */
+    margin: 0;
+    background-color: transparent; /* Прозрачный фон */
+    color: #CBA35C; /* Золотой текст */
+    border: 2px solid #CBA35C; /* Золотая рамка */
+    border-radius: 4px; /* Строгие углы */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.final-btn:hover {
+    background-color: #CBA35C; color: #000;
+}
+
 /* Центрируем "Всі товари" и заголовки */
 .section-title, #current-category-title {
     text-align: center !important;
