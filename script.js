@@ -10,7 +10,7 @@ let totalSum = 0;
 // Конфиг вебхуков
 
 const N8N_WEBHOOK_URL = 'https://tiktiok.xyz/webhook/4f86d599-fee4-49a4-8fb6-69fd6738cefe';
-const N8N_REDUCE_STOCK_URL = 'https://tiktiok.xyz/webhook/c1a37c52-a21a-4631-a3fa-96ae2e01468b';
+
 
 // 2 ПОИСК ЦВЕТОВ В ПОИСКОВОЙ ЛЕНТЕ
 function handleSearch() {
@@ -29,6 +29,31 @@ function handleSearch() {
     showFiltered(filtered);
 }
 
+// ФУНКЦИЯ ФИЛЬТРАЦИИ КАТЕГОРИЙ
+function filterProducts(category, btn) {
+    // 1. Убираем класс active у всех кнопок и даем его нажатой
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // 2. Меняем заголовок секции
+    const titleElement = document.getElementById('current-category-title');
+    if (titleElement) {
+        titleElement.innerText = category === 'Все' ? 'Всі товари' : category;
+    }
+
+    // 3. Фильтруем массив
+    if (category === 'Все') {
+        showFiltered(window.allProducts);
+    } else {
+        const filtered = window.allProducts.filter(item => {
+            // Проверяем поле 'Категория' (как в таблице)
+            const itemCat = (item['Категория'] || item['category'] || '').toString().trim();
+            return itemCat === category;
+        });
+        showFiltered(filtered);
+    }
+}
+
 // 3. ЗАГРУЗКА ДАННЫХ
 async function loadStore() {
     const container = document.getElementById('products-container');
@@ -41,7 +66,9 @@ async function loadStore() {
         const response = await fetch(N8N_WEBHOOK_URL);
         const data = await response.json();
         
-        // n8n может отдавать массив напрямую или объект. Приводим к массиву.
+        // ВАЖНО: Лог данных для проверки колонок в консоли (F12)
+        console.log("Данные из n8n:", data);
+        
         window.allProducts = Array.isArray(data) ? data : (data.products ? data.products : [data]);
         
         if (window.allProducts.length > 0) {
@@ -63,48 +90,56 @@ function showFiltered(items) {
     container.innerHTML = ''; 
 
     items.forEach(item => {
-        // 1. Маппинг названия и статуса
         const title = (item['Название'] || item['name'] || '').toString().trim();
-        const status = (item['Статус'] || item['status'] || '').toString().trim();
+        const rawStatus = (item['Статус'] || item['status'] || '').toString().trim();
         
-        if (!title || (status !== 'Active')) return;
+        if (!title || rawStatus.toLowerCase() !== 'active') return;
 
-        // 2. УМНЫЙ ПОДСЧЕТ ОСТАТКА (Stock)
-        // Добавил твой вариант 'Кол - во' (с пробелами), который виден на скрине таблицы
-        let rawStock = item['Кол - во'] || item['Кол-во'] || item['Количество'] || item['quantity'] || '0';
-        
-        // Очищаем от лишнего и превращаем в число
+        let rawStock = item['Кол - во'] || item['Кол-во'] || item['Количество'] || 0;
         const stock = parseInt(String(rawStock).replace(/\D/g, '')) || 0;
 
-        // 3. Остальные данные
         const id = item['ID'] || item['id'] || `id-${Math.random().toString(36).substr(2, 9)}`;
         const price = parseInt(String(item['Цена'] || item['price'] || '0').replace(/\D/g, '')) || 0;
         const img = item['Фото'] || item['photo'] || '';
-        const rawDesc = item['Описание'] || item['description'] || 'Преміальний букет зі свіжих квітів.';
+        
+        // 1. Берем описание из таблицы
+        const description = (item['Описание'] || item['description'] || 'Преміальний букет для особливих моментів.').toString().trim();
         
         const cleanTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        const cleanDesc = rawDesc.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\r?\n|\r/g, " ");
+        const cleanDesc = description.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\r?\n|\r/g, " ");
 
         container.innerHTML += `
-            <div class="product-card" data-id="${id}">
+            <div class="product-card" data-id="${id}" data-stock="${stock}">
                 <div class="product-image-container">
                     ${img ? `<img src="${img}" class="product-image" alt="${cleanTitle}">` : '🌸'}
                 </div>
-                <div class="product-info">
+                <div class="product-info" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
                     <h3 class="product-title">${title}</h3>
-                    <p class="product-price">${price} ₴</p>
                     
-                    <button class="details-btn" onclick="openProductDetails('${id}', '${cleanTitle}', '${img}', '${cleanDesc}', ${price})">Докладніше</button>
+                    <!-- 2. ДОБАВИЛИ БЛОК ОПИСАНИЯ ТУТ -->
+                    <p class="product-description">${description}</p>
+
+                    <p class="product-price" style="color: #CBA35C; font-weight: bold; margin: 5px 0;">${price} ₴</p>
                     
-                    <div class="buy-section" style="margin-top: 10px;">
+                    <p class="product-stock" style="color: #888; font-size: 13px; margin: 8px 0; text-align: center; width: 100%;">
+                        Залишилося: <b style="color:#CBA35C">${stock}</b> шт.
+                    </p>
+                    
+                    <button class="details-btn" onclick="openProductDetails('${id}', '${cleanTitle}', '${img}', '${cleanDesc}', ${price})">ДОКЛАДНІШЕ</button>
+                    
+                    <div class="buy-section" style="margin-top: 10px; width: 100%;">
                         ${stock > 0 ? `
-                            <button class="buy-btn" onclick="showCounter(this)">Додати</button>
-                            <div class="counter-container" style="display: none; justify-content: center; align-items: center; gap: 8px;">
+                            <button class="buy-btn" onclick="showCounter(this)">ДОДАТИ</button>
+                            <div class="counter-container" style="display: none; justify-content: center; align-items: center; gap: 12px;">
                                 <button class="count-btn" onclick="changeCount(this, -1)">-</button>
                                 <span class="count-value">1</span>
                                 <button class="count-btn" onclick="changeCount(this, 1)">+</button>
                             </div>
-                        ` : `<button class="buy-btn" disabled style="background:#222; color:#555;">Sold Out</button>`}
+                        ` : `
+                            <div style="background: #1a1a1a; color: #555; padding: 12px; border-radius: 8px; font-size: 14px; border: 1px solid #333;">
+                                Немає в наявності 🌸
+                            </div>
+                        `}
                     </div>
                 </div>
             </div>`;
@@ -170,8 +205,24 @@ function showCounter(btn) {
 function changeCount(btn, delta) {
     const card = btn.closest('.product-card');
     const countDisplay = card.querySelector('.count-value');
+    
+    // Берем лимит из атрибута карточки, который мы записали выше
+    const stockLimit = parseInt(card.getAttribute('data-stock')) || 0;
+    
     let currentCount = parseInt(countDisplay.innerText) || 1;
+
+    // ПРОВЕРКА: Если жмем ПЛЮС и уже достигли лимита
+    if (delta > 0 && currentCount >= stockLimit) {
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.showAlert(`Бро, вибач! В наявності лише ${stockLimit} шт. Больше заказать нельзя. 🌸`);
+        } else {
+            alert(`В наявності лише ${stockLimit} шт.`);
+        }
+        return; // Выходим из функции, не прибавляя ничего
+    }
+
     let newCount = currentCount + delta;
+    
     if (newCount <= 0) {
         card.querySelector('.counter-container').style.display = 'none';
         card.querySelector('.buy-btn').style.display = 'block';
@@ -179,7 +230,10 @@ function changeCount(btn, delta) {
     } else {
         countDisplay.innerText = newCount;
     }
+
     updateTotal();
+    
+    // Если открыта корзина — перерисовываем её, чтобы там тоже были актуальные цифры
     if (document.getElementById('cart-modal')?.style.display === 'flex') {
         renderCartItems();
     }
@@ -341,8 +395,9 @@ async function finalCheckout() {
     const nameInput = document.getElementById('customer-name').value.trim();
     const phoneInput = document.getElementById('customer-phone').value.trim();
     
-    // Твой актуальный вебхук
-    const ADMIN_WEBHOOK = 'https://tiktiok.xyz/webhook/4da37afc-37ca-4ea3-9fe0-ffb287465212';
+    // Твои два разных ключа (вебхука)
+    const ADMIN_WEBHOOK = 'https://tiktiok.xyz/webhook/4da37afc-37ca-4ea3-9fe0-ffb287465212'; // Уведомления
+    const STOCK_WEBHOOK = 'https://tiktiok.xyz/webhook-test/c1a37c52-a21a-4631-a3fa-96ae2e01468b'; // Списание (Аудитор)
 
     if (!nameInput || !phoneInput) {
         alert("Будь ласка, введіть ім'я та номер телефону 🌸");
@@ -350,28 +405,22 @@ async function finalCheckout() {
     }
 
     const orderItems = [];
-    let calculatedTotal = 0; // Переменная для честной математики
+    let calculatedTotal = 0;
 
     document.querySelectorAll('.product-card').forEach(card => {
         const counter = card.querySelector('.counter-container');
         if (counter && counter.style.display === 'flex') {
             const title = card.querySelector('.product-title').innerText.trim();
             const count = parseInt(card.querySelector('.count-value').innerText) || 0;
-            
-            // Вытаскиваем только цифры из цены (убираем "₴" и пробелы)
-            const priceText = card.querySelector('.product-price').innerText;
-            const pricePerUnit = parseInt(priceText.replace(/\D/g, '')) || 0;
+            const pricePerUnit = parseInt(card.querySelector('.product-price').innerText.replace(/\D/g, '')) || 0;
 
             if (count > 0) {
-                const subtotal = pricePerUnit * count;
-                calculatedTotal += subtotal; // Плюсуем к итогу
-
+                calculatedTotal += (pricePerUnit * count);
                 orderItems.push({
                     id: card.getAttribute('data-id'),
                     name: title,
                     count: count,
-                    price_unit: pricePerUnit,
-                    subtotal: subtotal
+                    price: pricePerUnit
                 });
             }
         }
@@ -381,26 +430,33 @@ async function finalCheckout() {
         customer_name: nameInput,
         customer_phone: phoneInput,
         order_list: orderItems.map(i => `${i.name} (${i.count} шт)`).join(', '),
-        details: orderItems,
-        total_sum: calculatedTotal + " ₴", // Отправляем ПРАВИЛЬНУЮ сумму
+        details: orderItems, // Это для Аудитора
+        total_sum: calculatedTotal + " ₴",
         tg_user_id: tg.initDataUnsafe?.user?.id || 'unknown',
-        tg_username: tg.initDataUnsafe?.user?.username || 'none',
         timestamp: new Date().toLocaleString('uk-UA')
     };
 
-    // Показываем успех
     showSuccessOrder(); 
 
-    // Отправляем Аудитору
+    // ЗАПУСКАЕМ ОБА ПРОЦЕССА ОДНОВРЕМЕННО
     try {
-        await fetch(ADMIN_WEBHOOK, {
+        // 1. Шлем админу
+        fetch(ADMIN_WEBHOOK, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
         });
-        console.log('Order sent successfully with total:', calculatedTotal);
+
+        // 2. Шлем Аудитору на списание
+        fetch(STOCK_WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+
+        console.log('Сигналы отправлены: и админу, и на склад.');
     } catch (e) {
-        console.error('Failed to send order', e);
+        console.error('Ошибка при отправке заказов:', e);
     }
 }
 

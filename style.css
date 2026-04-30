@@ -188,13 +188,26 @@ header {
 
 .product-title { 
     font-weight: 600; 
-    font-size: 15px; 
+    font-size: 20px; 
     color: #FFFFFF; 
     margin: 0 0 8px 0; 
-    text-transform: uppercase; 
     letter-spacing: 0.5px;
     min-height: 40px;
     text-align: center
+}
+
+.product-description {
+    color: #bbbbbb;            /* Цвет текста */
+    font-size: 15px;           /* Размер шрифта */
+    line-height: 1.5;          /* Межстрочный интервал */
+    margin: 10px 0 15px 0;     /* Отступы вокруг блока */
+    text-align: center;        /* Выравнивание по центру */
+    display: -webkit-box;      /* Включаем режим обрезки текста */
+    -webkit-line-clamp: 3;     /* Показываем только 3 строки */
+    -webkit-box-orient: vertical;
+    overflow: hidden;          /* Прячем всё, что не влезло в 3 строки */
+    min-height: 58px;          /* Фиксированная высота, чтобы карточки были ровными */
+    padding: 0 10px;
 }
 
 .product-price { 
@@ -232,7 +245,6 @@ header {
 }
 
 /* --- КНОПКИ --- */
-/* Полное восстановление элитного стиля кнопки */
 .buy-btn {
     display: block;
     width: 100%;
@@ -365,18 +377,24 @@ header {
 }
 
 .cart-container {
-    background-color: #000; 
-    width: 100%; 
-    max-height: 90vh;
-    border-radius: 20px 20px 0 0; 
-    padding: 25px; 
-    overflow-y: auto; 
-    border: 1px solid #CBA35C;
-    border-bottom: none; 
+    background: #0F0F0F;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    border-radius: 30px 30px 0 0;
+    border-top: 2px solid rgba(203, 163, 92, 0.6);
     position: relative;
-    opacity: 1; 
-    transform: translateY(100%);
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+    color: white;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+    
+    /* --- ОБНОВЛЕННАЯ АНИМАЦИЯ --- */
+    transform: translateY(100%); /* Изначально скрыта внизу */
+    /* ease-out cubic-bezier дает очень плавное замедление в конце */
+    transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1); 
+    will-change: transform; /* Подсказка браузеру для плавности */
 }
 
 .cart-overlay.active .cart-container {
@@ -406,9 +424,6 @@ header {
     animation: scrollReveal linear both;
     animation-timeline: --card-reveal;
 
-    /* НАСТРОЙКА ДИСТАНЦИИ (Тут магия) */
-    /* entry 0% — начинает появляться, как только показался нижний край */
-    /* cover 30% — полностью готов, когда прошел 30% высоты экрана */
     animation-range: entry 0% cover 30%;
 
     /* Твои стили оформления */
@@ -564,28 +579,31 @@ header {
 .cart-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(8px);
-    display: none;
+    background: rgba(0,0,0,0.7); /* Чуть светлее фон */
+    backdrop-filter: blur(5px);
+    display: none; /* Включается через JS (display: flex) */
     z-index: 2000;
-    align-items: center;
+    align-items: flex-end; /* Важно: прижимает корзину к низу */
     justify-content: center;
-    transition: opacity 0.3s ease;
 }
 
 .cart-container {
     background: #0F0F0F;
-    width: 90%;
-    max-width: 400px;
-    max-height: 85vh;
-    border-radius: 28px;
-    border: 1px solid rgba(203, 163, 92, 0.4);
+    width: 100%; /* На всю ширину экрана */
+    max-width: 500px; /* Но не шире 500px на компах */
+    max-height: 80vh;
+    border-radius: 30px 30px 0 0; /* Закругляем только верх */
+    border-top: 2px solid rgba(203, 163, 92, 0.6); /* Золотая кайма сверху */
     position: relative;
     color: white;
     padding: 25px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+    
+    /* Анимация появления */
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
 }
 
 .cart-header {
