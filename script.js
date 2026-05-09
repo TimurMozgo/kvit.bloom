@@ -411,7 +411,7 @@ async function finalCheckout() {
     const phoneInput = document.getElementById('customer-phone').value.trim();
     
     // Твои два разных ключа (вебхука)
-    const ADMIN_WEBHOOK = 'https://tiktiok.xyz/webhook/708aaac4-0733-4a46-ad0c-f919e3c08698'; // Уведомления
+    const ADMIN_WEBHOOK = 'https://tiktiok.xyz/webhook/4da37afc-37ca-4ea3-9fe0-ffb287465212'; // Уведомления
     const STOCK_WEBHOOK = 'https://tiktiok.xyz/webhook/c1a37c52-a21a-4631-a3fa-96ae2e01468b'; // Списание (Аудитор)
 
     if (!nameInput || !phoneInput) {
