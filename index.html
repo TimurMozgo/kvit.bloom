@@ -74,8 +74,21 @@
     </div>
 
     <div id="contact-menu" class="contact-menu">
-        <a href="https://t.me/твой_ник" target="_blank" class="contact-link">Чат з флористом</a>
+        <div onclick="openAIChat()" class="contact-link" style="cursor:pointer;">Чат з флористом</div>
         <a href="tel:+380730403338" class="contact-link">Зателефонувати</a>
+    </div>
+
+    <div id="ai-chat-window" class="ai-chat-window" style="display:none;">
+        <div class="ai-chat-header">
+            <span>KvitBloom | АИ Ассистент</span>
+            <button onclick="closeAIChat()" style="background:none; border:none; color:white; cursor:pointer;">✕</button>
+        </div>
+        <div id="ai-messages" class="ai-messages">
+            </div>
+        <div class="ai-input-area">
+            <input type="text" id="ai-user-input" placeholder="Напишіть нам..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendToAI()">→</button>
+        </div>
     </div>
 
     <script src="script.js"></script>

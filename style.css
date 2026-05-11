@@ -1015,6 +1015,89 @@ header {
     box-shadow: 0 5px 10px rgba(203, 163, 92, 0.3);
 }
 
+/* Личный чат с АИ АССИСТЕНТОМ */
+
+.ai-chat-window {
+    position: fixed;
+    /* Устанавливаем точку отсчета в центр */
+    top: 50%;
+    left: 50%;
+    /* Сдвигаем окно назад на половину его собственной ширины и высоты */
+    transform: translate(-50%, -50%);
+    
+    /* Для мобилок берем 90% ширины, чтобы были аккуратные отступы по бокам */
+    width: 90vw;
+    max-width: 400px; /* На компах не будет шире 400px */
+    height: 75vh;
+    max-height: 600px;
+
+    background: #0f0f0f;
+    border: 2px solid #CBA35C;
+    border-radius: 20px;
+    z-index: 100000;
+    display: none; 
+    flex-direction: column;
+    box-shadow: 0 0 50px rgba(0,0,0,1);
+    overflow: hidden;
+}
+
+.ai-chat-header {
+    background: #CBA35C;
+    color: #000;
+    padding: 12px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ai-messages {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #151515;
+}
+
+.msg-ai, .msg-user {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.msg-ai {
+    align-self: flex-start;
+    background: #222;
+    color: #eee;
+    border-left: 3px solid #CBA35C;
+}
+
+.msg-user {
+    align-self: flex-end;
+    background: #CBA35C;
+    color: #000;
+}
+
+.ai-input-area {
+    display: flex;
+    padding: 10px;
+    background: #0f0f0f;
+    border-top: 1px solid #333;
+}
+
+.ai-input-area input {
+    flex-grow: 1;
+    background: #222;
+    border: 1px solid #444;
+    color: white;
+    padding: 8px;
+    border-radius: 5px;
+    outline: none;
+}
+
 @media screen and (max-width: 480px) {
     .success-card {
         width: calc(100% - 40px); /* Отступы по бокам по 20px */
@@ -1037,5 +1120,12 @@ header {
     .success-close-btn {
         padding: 14px;
         font-size: 15px;
+    }
+}
+
+@media screen and (max-height: 500px) {
+    .ai-chat-window {
+        height: 95vh;
+        top: 50%;
     }
 }

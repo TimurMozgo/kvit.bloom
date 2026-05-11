@@ -562,3 +562,63 @@ window.addEventListener('click', function(e) {
 });
 
 window.onload = loadStore;
+
+function openAIChat() {
+    document.getElementById('contact-menu').style.display = 'none';
+    document.getElementById('ai-chat-window').style.display = 'flex';
+    
+    // Приветствие от владелицы, если чат пустой
+    const msgContainer = document.getElementById('ai-messages');
+    if (msgContainer.innerHTML.trim() === "") {
+        addMessage("Здравствуйте. Я — владелица студии KvitBloom. Какой букет мы сегодня подберем для Вашего особого случая?", 'ai');
+    }
+}
+
+function closeAIChat() {
+    document.getElementById('ai-chat-window').style.display = 'none';
+}
+
+function addMessage(text, side) {
+    const container = document.getElementById('ai-messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `msg-${side}`;
+
+    // Превращаем Markdown картинку ![название](ссылка) в реальный HTML
+    const formattedText = text.replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" style="width:100%; border-radius:10px; margin-top:10px; display:block;">');
+    
+    msgDiv.innerHTML = formattedText; // Используем innerHTML для отрисовки картинок
+    
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+async function sendToAI() {
+    const input = document.getElementById('ai-user-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMessage(text, 'user');
+    input.value = '';
+
+    try {
+        const response = await fetch('https://tiktiok.xyz/webhook/site-chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                message: text,
+                sessionId: tg?.initDataUnsafe?.user?.id || "dev_user" 
+            })
+        });
+        const data = await response.json();
+        
+        // Статусный ответ, пока агент "думает" или если пришла пустота
+        addMessage(data.output || "Зачекайте хвилину, я особисто перевіряю якість сьогоднішньої поставки для Вас...", 'ai');
+    } catch (e) {
+        // Ошибка тоже должна быть вежливой
+        addMessage("Перепрошую, виникла невелика технічна заминка. Спробуйте, будь ласка, ще раз через мить.", 'ai');
+    }
+}
+
+function handleKeyPress(e) {
+    if (e.key === 'Enter') sendToAI();
+}
