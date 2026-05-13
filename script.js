@@ -567,7 +567,6 @@ function openAIChat() {
     document.getElementById('contact-menu').style.display = 'none';
     document.getElementById('ai-chat-window').style.display = 'flex';
     
-    // Приветствие от владелицы, если чат пустой
     const msgContainer = document.getElementById('ai-messages');
     if (msgContainer.innerHTML.trim() === "") {
         addMessage("Здравствуйте. Я — владелица студии KvitBloom. Какой букет мы сегодня подберем для Вашего особого случая?", 'ai');
@@ -586,11 +585,14 @@ function addMessage(text, side) {
     // Превращаем Markdown картинку ![название](ссылка) в реальный HTML
     const formattedText = text.replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" style="width:100%; border-radius:10px; margin-top:10px; display:block;">');
     
-    msgDiv.innerHTML = formattedText; // Используем innerHTML для отрисовки картинок
+    msgDiv.innerHTML = formattedText; 
     
     container.appendChild(msgDiv);
     container.scrollTop = container.scrollHeight;
 }
+
+// ФУНКЦИЯ ДЛЯ ПАУЗЫ (чтобы сообщения шли по очереди)
+const delay = ms => new Promise(res => setTimeout(res, ms));
 
 async function sendToAI() {
     const input = document.getElementById('ai-user-input');
@@ -609,12 +611,28 @@ async function sendToAI() {
                 sessionId: tg?.initDataUnsafe?.user?.id || "dev_user" 
             })
         });
-        const data = await response.json();
         
-        // Статусный ответ, пока агент "думает" или если пришла пустота
-        addMessage(data.output || "Зачекайте хвилину, я особисто перевіряю якість сьогоднішньої поставки для Вас...", 'ai');
+        const data = await response.json();
+        const fullOutput = data.output || "";
+
+        if (!fullOutput) {
+            addMessage("Зачекайте хвилину, я особисто перевіряю якість сьогоднішньої поставки для Вас...", 'ai');
+            return;
+        }
+
+        // РАЗРЕЗАЕМ ОТВЕТ ПО МАРКЕРУ
+        const messages = fullOutput.split('---SPLIT---');
+
+        // ВЫВОДИМ КАЖДОЕ СООБЩЕНИЕ С ПАУЗОЙ
+        for (const msg of messages) {
+            const cleanMsg = msg.trim();
+            if (cleanMsg) {
+                await delay(600); // Задержка 0.6 сек для солидности
+                addMessage(cleanMsg, 'ai');
+            }
+        }
+
     } catch (e) {
-        // Ошибка тоже должна быть вежливой
         addMessage("Перепрошую, виникла невелика технічна заминка. Спробуйте, будь ласка, ще раз через мить.", 'ai');
     }
 }
